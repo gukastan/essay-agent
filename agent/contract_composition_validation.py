@@ -57,6 +57,17 @@ def validate_sentences(
                 "personal_source",
                 "Personal sentences require applicant evidence",
             )
+        require(
+            sentence.claim_kind != "stated_view"
+            or any(
+                facts[fid].claim_kind == "stated_view"
+                and facts[fid].information_state == "available"
+                and facts[fid].source_kind == "applicant"
+                for fid in sentence.fact_ids
+            ),
+            "stated_view_evidence",
+            "Personal views require an available applicant stated-view fact",
+        )
 
 
 def validate_composition(ctx: ContractContext) -> None:

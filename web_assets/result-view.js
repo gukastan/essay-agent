@@ -14,7 +14,7 @@ export const ResultView = {
     coverage(value) { return ({ supported: "근거를 반영함", general: "일반적인 내용", not_expressed: "아직 작성되지 않음", unassessed: "확인하지 못함" })[value]; },
     check(value) { return ({ met: "충족", partial: "일부 충족", unmet: "보완 필요", unassessed: "미검증", not_applicable: "해당 없음" })[value]; },
     category(value) { return ({ required_edit: "필수 수정", required_info: "필수 확인", optional: "선택 개선" })[value]; },
-    questionState(value) { return ({ proposed: "선택하면 답변을 적을 수 있어요", asked: "답변 대기", resolved: "답변 반영", unavailable: "확인 불가로 처리됨", not_needed: "답변하지 않음으로 처리됨" })[value]; },
+    questionState(value) { return ({ proposed: "선택하면 답변을 적을 수 있어요", asked: "답변 대기", resolved: "답변 반영", unavailable: "확인 불가로 처리됨", not_needed: "추가 답변을 요청하지 않습니다." })[value]; },
   },
   template: `<div class="ui-stack ui-result" id="result-view" tabindex="-1">
     <ui-panel id="draft" :title="status">

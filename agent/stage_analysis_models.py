@@ -17,6 +17,7 @@ from .contracts import (
     SourceSnapshot,
     validate_contract,
 )
+from .stage_normalization import align_facts, validate_candidate_relations
 
 
 class PayloadValidationInfo(Protocol):
@@ -50,20 +51,22 @@ class AnalysisOutput(ContractModel):
         if info.context is None:
             return self
         payload = AnalysisPayload.model_validate(info.context["payload"])
+        facts = align_facts(self.facts, payload.sources)
         validate_contract(
             ContractContext(
                 evidence_version=payload.evidence_version,
                 sources=payload.sources,
-                facts=self.facts,
+                facts=facts,
                 analysis=self.analysis,
             )
         )
         require(
             bool(self.analysis.requirements), "requirements", "Keep a question or general direction"
         )
+        validate_candidate_relations(self.analysis)
         for requirement in self.analysis.requirements:
             if requirement.origin == "explicit":
                 require(
                     bool(payload.request.question), "question_origin", "Explicit needs a question"
                 )
-        return self
+        return self.model_copy(update={"facts": facts})

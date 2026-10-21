@@ -35,7 +35,7 @@ class AppSettings:
     """Public runtime choices; credentials stay inside provider construction."""
 
     backend: Literal["openai", "fake"] = "openai"
-    fast_model: str = "gpt-4o-mini"
+    fast_model: str = "gpt-4o"
     quality_model: str = "gpt-4o"
     db_path: Path = DB_PATH
     mcp_enabled: bool = True
@@ -47,7 +47,7 @@ def load_settings() -> AppSettings:
         _ = load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=False)
     return AppSettings(
         backend=parse_backend(os.getenv("LLM_BACKEND", "openai")),
-        fast_model=os.getenv("OPENAI_FAST_MODEL", "gpt-4o-mini"),
+        fast_model=os.getenv("OPENAI_FAST_MODEL", "gpt-4o"),
         quality_model=os.getenv("OPENAI_QUALITY_MODEL", "gpt-4o"),
         db_path=Path(os.getenv("ESSAY_DB_PATH", str(DB_PATH))),
         mcp_enabled=os.getenv("ESSAY_MCP_ENABLED", "1") == "1",

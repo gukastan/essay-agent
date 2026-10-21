@@ -18,6 +18,12 @@ from .contracts import (
 )
 from .essay_rules import budget_outline
 from .stage_analysis_models import PayloadValidationInfo
+from .stage_normalization import (
+    ProposalValue,
+    provisional_budget,
+    reservation_reason,
+    title_reservation,
+)
 from .stage_structure_checks import validate_usable_content
 
 
@@ -38,13 +44,48 @@ class StructureOutput(ContractModel):
 
     outline: Outline
 
+    @model_validator(mode="before")
+    @classmethod
+    def derived_counts(cls, value: ProposalValue) -> ProposalValue:
+        """Normalize provider bookkeeping before nested strict Budget parsing."""
+        return provisional_budget(value)
+
     @model_validator(mode="after")
     def current_analysis(self, info: PayloadValidationInfo) -> Self:
         """Run contextual checks within the adapter's original two-attempt budget."""
         if info.context is None:
             return self
         payload = StructurePayload.model_validate(info.context["payload"])
-        outline = budget_outline(self.outline, payload.request.length_policy)
+        proposal = self.outline
+        policy = payload.request.length_policy
+        if (
+            policy.max_chars is not None
+            and policy.include_subtitle
+            and not proposal.budget.subtitle_reserved_chars
+        ):
+            writable = next(
+                (section for section in proposal.sections if section.write_mode != "omit"), None
+            )
+            require(
+                writable is not None,
+                "paragraphs",
+                "Plan writable content before reserving title space",
+            )
+            if writable is not None:
+                proposal = proposal.model_copy(
+                    update={
+                        "budget": proposal.budget.model_copy(
+                            update={
+                                "subtitle_reserved_chars": title_reservation(writable.role, policy)
+                            }
+                        ),
+                        "planning_notes": (
+                            *proposal.planning_notes,
+                            reservation_reason(writable.role),
+                        ),
+                    }
+                )
+        outline = budget_outline(proposal, policy)
         validate_contract(
             ContractContext(
                 evidence_version=payload.evidence_version,

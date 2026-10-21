@@ -13,10 +13,10 @@ from .contracts import (
     SectionPlan,
     SelectionDecision,
     SubtitlePlan,
-    count_characters,
 )
 from .essay_rules import budget_outline
 from .stage_evidence import eligible_links
+from .stage_normalization import reservation_reason, title_reservation
 from .stage_structure_models import StructurePayload
 
 
@@ -182,9 +182,7 @@ def structure_fallback(payload: StructurePayload) -> Outline:
             max_chars=limit,
             subtitle_reserved_chars=None
             if limit is None
-            else max(
-                1, count_characters("확인된 " + writable[0].role, payload.request.length_policy)
-            ),
+            else title_reservation(writable[0].role, payload.request.length_policy),
             separator_chars=0,
             usable_body_chars=None,
             constraint_notes=(),
@@ -196,7 +194,7 @@ def structure_fallback(payload: StructurePayload) -> Outline:
         else "ready",
         planning_notes=(
             "최소 구조: 필요한 설명을 보존하고 없는 개인 정보는 생략합니다.",
-            f"소제목 잠정 예약은 첫 설명 역할({writable[0].role})의 짧은 요약 길이에 근거합니다.",
+            reservation_reason(writable[0].role),
         ),
         held_claims=payload.analysis.held_claims,
     )
