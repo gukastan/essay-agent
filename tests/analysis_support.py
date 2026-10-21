@@ -7,7 +7,6 @@ import anyio
 from agent.contracts import (
     Analysis,
     ContractModel,
-    DraftBundle,
     EssayRequest,
     EvidenceVersion,
     Fact,
@@ -23,6 +22,7 @@ from agent.essay_fake import essay_response
 from agent.essay_llm import ErrorKind, GenerationError, GenerationUsage, Output, Stage
 from agent.fake_llm import FastLLM, QualityLLM
 from agent.graph import EssayState, build_graph
+from agent.previous_draft import PreviousDraft
 from agent.stage_analysis_models import AnalysisOutput
 from agent.stage_structure_models import StructureOutput
 
@@ -35,7 +35,7 @@ QUESTION: Final = "협업 문제를 해결한 경험을 본인의 역할과 배�
 
 
 class RunView(ContractModel):
-    previous_draft: DraftBundle | None = None
+    previous_draft: PreviousDraft | None = None
     request: EssayRequest
     evidence_version: EvidenceVersion
     revision_context: RevisionContext

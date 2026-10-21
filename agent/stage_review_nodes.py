@@ -44,6 +44,7 @@ def review_payload(state: EssayState) -> ReviewPayload:
         writing_report=writing,
         integration_report=integration,
         repair_count=state.get("repair_count", 0),
+        stored_parent=state.get("stored_parent"),
     )
 
 

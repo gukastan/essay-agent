@@ -13,14 +13,15 @@ from .contracts import (
     ReviewIssue,
     Sentence,
     SentenceCheck,
+    StoredParent,
     Suggestion,
     TitleReview,
     WritingReport,
 )
-from .stage_writing_models import WritingPayload
+from .stage_writing_models import CompositionPayload
 
 
-class ReviewPayload(WritingPayload):
+class ReviewPayload(CompositionPayload):
     """Freeze current draft and historical composition reports for one review."""
 
     fallback_provenance: tuple[Sentence, ...]
@@ -28,6 +29,7 @@ class ReviewPayload(WritingPayload):
     writing_report: WritingReport
     integration_report: IntegrationReport
     repair_count: int
+    stored_parent: StoredParent | None = None
 
 
 class ReviewJudgments(ContractModel):

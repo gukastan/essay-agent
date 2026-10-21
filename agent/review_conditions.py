@@ -3,10 +3,10 @@
 import re
 
 from .contracts import TitleCandidate, TitleReview
-from .stage_writing_models import WritingPayload
+from .stage_writing_models import CompositionPayload
 
 
-def apply_known_conditions(payload: WritingPayload, title: TitleReview) -> TitleReview:
+def apply_known_conditions(payload: CompositionPayload, title: TitleReview) -> TitleReview:
     """Preserve explicit no-title and quoted fixed-title instructions on every path."""
     texts = tuple(
         dict.fromkeys(

@@ -34,6 +34,7 @@ def review_context(payload: ReviewPayload, bundle: DraftBundle, review: Review) 
         bundle=bundle,
         review=review,
         request=payload.request,
+        parent=payload.stored_parent,
     )
 
 

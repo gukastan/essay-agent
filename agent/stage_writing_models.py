@@ -19,11 +19,12 @@ from .contracts import (
     SourceSnapshot,
     WritingNote,
 )
+from .previous_draft import PreviousDraft
 from .stage_analysis_models import PayloadValidationInfo
 from .stage_writing_validation import validate_writing_parts
 
 
-class WritingPayload(ContractModel):
+class CompositionPayload(ContractModel):
     """Freeze all source, analysis and allocation context for one writing call."""
 
     request: EssayRequest
@@ -32,6 +33,12 @@ class WritingPayload(ContractModel):
     facts: tuple[Fact, ...]
     analysis: Analysis
     outline: Outline
+
+
+class WritingPayload(CompositionPayload):
+    """Keep a prior draft solely as optional server-loaded wording context."""
+
+    previous_draft: PreviousDraft | None = None
 
 
 class WritingOutput(ContractModel):

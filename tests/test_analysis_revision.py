@@ -1,5 +1,6 @@
 import anyio
 
+from agent.contract_rendering import render_body
 from agent.contracts import (
     EssayRequest,
     QuestionKey,
@@ -10,6 +11,7 @@ from agent.contracts import (
     SourceId,
     UserSource,
 )
+from agent.previous_draft import PreviousDraft
 from agent.stage_analysis_models import AnalysisOutput
 from tests.analysis_support import Responses, execute, request_for, seed
 from tests.fixtures.cases import ContractCase
@@ -140,7 +142,12 @@ def test_generated_history_not_reextracted() -> None:
     previous = ContractCase.load("complete.json").parse().bundle
     assert previous is not None
     state = seed(EssayRequest(revision_instruction="3곳을 5곳으로 바꿔 주세요."))
-    state["previous_draft"] = previous
+    state["previous_draft"] = PreviousDraft(
+        document_id=state["request"].document_id,
+        version_id=previous.version_id,
+        subtitle=previous.subtitle or "이전 초안",
+        body=render_body(previous),
+    )
     result = anyio.run(execute, state, Responses())
     assert result.sources == ()
     assert result.facts == ()

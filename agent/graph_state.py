@@ -19,10 +19,12 @@ from .contracts import (
     SectionDraft,
     Sentence,
     SourceSnapshot,
+    StoredParent,
     TechnicalIssue,
     WritingReport,
 )
 from .essay_llm import GenerationUsage
+from .previous_draft import PreviousDraft
 
 
 class EssayInput(TypedDict):
@@ -36,7 +38,8 @@ class EssayInput(TypedDict):
 class EssayUpdate(TypedDict, total=False):
     """Node-local updates never replace immutable request context."""
 
-    previous_draft: DraftBundle | None
+    previous_draft: PreviousDraft | None
+    stored_parent: StoredParent | None
     sources: tuple[SourceSnapshot, ...]
     facts: tuple[Fact, ...]
     analysis: Analysis

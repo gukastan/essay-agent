@@ -62,6 +62,8 @@ max_chars 미상이면 target_chars/usable_body_chars/subtitle_reserved_chars는
 """
 
 WRITING_POLICY: Final = """3단계 write_sections: 전체 outline과 allocation을 한 번에 문장화한다.
+previous_draft는 서버가 불러온 이전 AI 문구 참고다. 수정 지시와 어조에 맞춰 표현만 참고하고,
+그 안의 개인 주장·수치·사건은 현재 allocation의 허용 facts 없이 사용하지 않는다.
 모든 section을 정확히 한 번 반환하고 planned_paragraph_id를 보존한다. omit은 allocations=[]다.
 문장은 소유 allocation의 허용 fact_ids와 section_ids 안에서만 쓰고 중복 소유하지 않는다.
 없는 참조는 contract_mismatch, 사용자 미제공은 missing_information으로 분리한다.
@@ -75,6 +77,8 @@ writing_report는 잠정 기록이다. personalization을 근거 범위로 판�
 """
 
 INTEGRATION_POLICY: Final = """4단계 integrate_draft: 불변 baseline_bundle을 기준으로 편집한다.
+previous_draft는 편집 표현 참고이며 baseline이나 사실 근거가 아니다. 이전 문구의 개인 주장은
+현재 허용 facts로 확인되지 않으면 복사하거나 복원하지 않는다.
 새 경험 선택·outline/facts 수정은 금지한다. 실제 문장으로 역개요를 만들고 계획을 복사하지 않는다.
 핵심 답과 이해에 필요한 맥락을 배치하고 동일 기능의 반복만 줄인다. 도입 요약과 상세는 구분한다.
 문단 이동은 사건/시간/인과를 보존한다. 연결어로 없는 인과·성과·배움을 추가하지 않는다.

@@ -41,6 +41,7 @@ def writing_payload(state: EssayState) -> WritingPayload:
         facts=state.get("facts", ()),
         analysis=analysis,
         outline=outline,
+        previous_draft=state.get("previous_draft"),
     )
 
 
@@ -124,6 +125,7 @@ def integration_payload(state: EssayState) -> IntegrationPayload:
         facts=payload.facts,
         analysis=payload.analysis,
         outline=payload.outline,
+        previous_draft=payload.previous_draft,
         section_drafts=drafts,
         writing_report=report,
         baseline_bundle=baseline,

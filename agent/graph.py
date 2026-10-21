@@ -13,6 +13,7 @@ from .essay_llm import GenerationError
 from .graph_state import EssayState, EssayUpdate
 from .langgraph_boundary import END, START, CompiledGraph, StateGraph
 from .mcp_materials import local_guide, local_prompt
+from .run_progress import observe_node
 from .stage_analysis_models import AnalysisOutput
 from .stage_analysis_rules import analysis_fallback, normalize_analysis
 from .stage_composition_nodes import integrate_draft, write_sections
@@ -130,24 +131,41 @@ def build_graph(
 ) -> CompiledGraph[EssayState, EssayUpdate]:
     """Compile the released stages; later tickets extend this same graph in order."""
     builder: StateGraph[EssayState, EssayUpdate] = StateGraph(EssayState)
-    _ = builder.add_node("analyze_context", partial(analyze_context, deps=deps))
-    _ = builder.add_node("plan_structure", partial(plan_structure, deps=deps))
+    _ = builder.add_node(
+        "analyze_context", observe_node("analyze_context", partial(analyze_context, deps=deps))
+    )
+    _ = builder.add_node(
+        "plan_structure", observe_node("plan_structure", partial(plan_structure, deps=deps))
+    )
     _ = builder.add_edge(START, "analyze_context")
     _ = builder.add_edge("analyze_context", "plan_structure")
     match stop_after:
         case "plan_structure":
             _ = builder.add_edge("plan_structure", END)
         case "integrate_draft" | "deliver_result":
-            _ = builder.add_node("write_sections", partial(write_sections, deps=deps))
-            _ = builder.add_node("integrate_draft", partial(integrate_draft, deps=deps))
+            _ = builder.add_node(
+                "write_sections", observe_node("write_sections", partial(write_sections, deps=deps))
+            )
+            _ = builder.add_node(
+                "integrate_draft",
+                observe_node("integrate_draft", partial(integrate_draft, deps=deps)),
+            )
             _ = builder.add_edge("plan_structure", "write_sections")
             _ = builder.add_edge("write_sections", "integrate_draft")
             if stop_after == "integrate_draft":
                 _ = builder.add_edge("integrate_draft", END)
             else:
-                _ = builder.add_node("title_and_review", partial(title_and_review, deps=deps))
-                _ = builder.add_node("repair_draft", partial(repair_draft, deps=deps))
-                _ = builder.add_node("deliver_result", partial(deliver_result, deps=deps))
+                _ = builder.add_node(
+                    "title_and_review",
+                    observe_node("title_and_review", partial(title_and_review, deps=deps)),
+                )
+                _ = builder.add_node(
+                    "repair_draft", observe_node("repair_draft", partial(repair_draft, deps=deps))
+                )
+                _ = builder.add_node(
+                    "deliver_result",
+                    observe_node("deliver_result", partial(deliver_result, deps=deps)),
+                )
                 _ = builder.add_edge("integrate_draft", "title_and_review")
                 _ = builder.add_conditional_edges(
                     "title_and_review",
