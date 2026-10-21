@@ -16,12 +16,23 @@ from .mcp_materials import local_guide, local_prompt
 from .stage_analysis_models import AnalysisOutput
 from .stage_analysis_rules import analysis_fallback, normalize_analysis
 from .stage_composition_nodes import integrate_draft, write_sections
+from .stage_delivery import deliver_result
 from .stage_issues import generation_issue
+from .stage_review_nodes import repair_draft, title_and_review
 from .stage_sources import SourceInput, prepare_analysis
 from .stage_structure_models import StructureOutput, StructurePayload
 from .stage_structure_rules import structure_fallback
 
-__all__ = ["EssayState", "EssayUpdate", "build_graph", "integrate_draft", "write_sections"]
+__all__ = [
+    "EssayState",
+    "EssayUpdate",
+    "build_graph",
+    "deliver_result",
+    "integrate_draft",
+    "repair_draft",
+    "title_and_review",
+    "write_sections",
+]
 
 
 async def analyze_context(state: EssayState, deps: SupervisorDeps) -> EssayUpdate:
@@ -115,7 +126,7 @@ async def plan_structure(state: EssayState, deps: SupervisorDeps) -> EssayUpdate
 def build_graph(
     deps: SupervisorDeps,
     *,
-    stop_after: Literal["plan_structure", "integrate_draft"] = "integrate_draft",
+    stop_after: Literal["plan_structure", "integrate_draft", "deliver_result"] = "deliver_result",
 ) -> CompiledGraph[EssayState, EssayUpdate]:
     """Compile the released stages; later tickets extend this same graph in order."""
     builder: StateGraph[EssayState, EssayUpdate] = StateGraph(EssayState)
@@ -126,12 +137,34 @@ def build_graph(
     match stop_after:
         case "plan_structure":
             _ = builder.add_edge("plan_structure", END)
-        case "integrate_draft":
+        case "integrate_draft" | "deliver_result":
             _ = builder.add_node("write_sections", partial(write_sections, deps=deps))
             _ = builder.add_node("integrate_draft", partial(integrate_draft, deps=deps))
             _ = builder.add_edge("plan_structure", "write_sections")
             _ = builder.add_edge("write_sections", "integrate_draft")
-            _ = builder.add_edge("integrate_draft", END)
+            if stop_after == "integrate_draft":
+                _ = builder.add_edge("integrate_draft", END)
+            else:
+                _ = builder.add_node("title_and_review", partial(title_and_review, deps=deps))
+                _ = builder.add_node("repair_draft", partial(repair_draft, deps=deps))
+                _ = builder.add_node("deliver_result", partial(deliver_result, deps=deps))
+                _ = builder.add_edge("integrate_draft", "title_and_review")
+                _ = builder.add_conditional_edges(
+                    "title_and_review",
+                    route_review,
+                    {"repair_draft": "repair_draft", "deliver_result": "deliver_result"},
+                )
+                _ = builder.add_edge("repair_draft", "title_and_review")
+                _ = builder.add_edge("deliver_result", END)
         case _:
             assert_never(stop_after)
     return builder.compile()
+
+
+def route_review(state: EssayState) -> str:
+    """Route exclusively from the current review control; older warnings cannot stop repair."""
+    control = state.get("review_control")
+    if control is None:
+        code = "review_control"
+        raise ContractViolation(code, "Review must determine its next edge")
+    return "deliver_result" if control.stop else "repair_draft"

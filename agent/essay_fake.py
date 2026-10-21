@@ -6,8 +6,11 @@ from .contracts import ContractModel
 from .essay_llm import ErrorKind, GenerationError, GenerationUsage, Output, Stage
 from .fake_analysis import analyze_literals
 from .fake_composition import integrate_literals, write_literals
+from .fake_repair import repair_literals
+from .fake_review import review_literals
 from .stage_analysis_models import AnalysisPayload
 from .stage_integration_models import IntegrationPayload
+from .stage_review_models import RepairPayload, ReviewPayload
 from .stage_structure_models import StructureOutput, StructurePayload
 from .stage_structure_rules import structure_fallback
 from .stage_writing_models import WritingPayload
@@ -26,7 +29,11 @@ def essay_response(stage: Stage, payload: ContractModel, output_model: type[Outp
             response = write_literals(WritingPayload.model_validate(payload.model_dump()))
         case "integrate_draft":
             response = integrate_literals(IntegrationPayload.model_validate(payload.model_dump()))
-        case "title_and_review" | "repair_draft" | "deliver_result":
+        case "title_and_review":
+            response = review_literals(ReviewPayload.model_validate(payload.model_dump()))
+        case "repair_draft":
+            response = repair_literals(RepairPayload.model_validate(payload.model_dump()))
+        case "deliver_result":
             raise GenerationError(ErrorKind.CONFIGURATION, GenerationUsage(attempts=()))
         case _:
             assert_never(stage)

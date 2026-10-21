@@ -7,6 +7,7 @@ from agent.contracts import (
     EssayRequest,
     IntegrationReport,
     SectionDraft,
+    Sentence,
     WritingReport,
 )
 from agent.deps import SupervisorDeps
@@ -16,6 +17,7 @@ from tests.analysis_support import Responses, RunView, seed
 
 
 class CompositionView(RunView):
+    fallback_provenance: tuple[Sentence, ...]
     section_drafts: tuple[SectionDraft, ...]
     writing_report: WritingReport
     candidate_bundle: DraftBundle
@@ -25,7 +27,7 @@ class CompositionView(RunView):
 async def execute_composition(request: EssayRequest, responses: Responses) -> CompositionView:
     fast, quality = FastLLM(responses), QualityLLM(responses)
     try:
-        graph = build_graph(SupervisorDeps(fast, quality))
+        graph = build_graph(SupervisorDeps(fast, quality), stop_after="integrate_draft")
         result = await graph.ainvoke(seed(request), {"recursion_limit": 20})
         return CompositionView.model_validate(result)
     finally:

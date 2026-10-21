@@ -23,12 +23,10 @@ def count_characters(text: str, policy: StrictLengthPolicy) -> int:
 
 def render_body(bundle: DraftBundle) -> str:
     """Enforce render body boundary semantics."""
-    return normalized_text(
-        "\n\n".join(
-            " ".join(sentence.text for sentence in paragraph.sentences)
-            for paragraph in bundle.paragraphs
-            if paragraph.sentences
-        )
+    return "\n\n".join(
+        " ".join(sentence.text for sentence in paragraph.sentences)
+        for paragraph in bundle.paragraphs
+        if paragraph.sentences
     )
 
 
@@ -36,7 +34,7 @@ def render_copy_text(bundle: DraftBundle) -> str:
     """Enforce render copy text boundary semantics."""
     body = render_body(bundle)
     if bundle.subtitle and bundle.subtitle_placement == "answer":
-        return normalized_text(f"{bundle.subtitle}\n\n{body}")
+        return f"{bundle.subtitle}\n\n{body}"
     return body
 
 

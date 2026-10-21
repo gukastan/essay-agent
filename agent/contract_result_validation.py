@@ -106,8 +106,11 @@ def validate_result(ctx: ContractContext) -> None:
             require(
                 bool(entry.actual_sentence_ids)
                 and all(
-                    sid in checks and checks[sid].status == "source_supported"
+                    sid in checks and checks[sid].status in ("source_supported", "general_valid")
                     for sid in entry.actual_sentence_ids
+                )
+                and any(
+                    checks[sid].status == "source_supported" for sid in entry.actual_sentence_ids
                 ),
                 "coverage_evidence",
                 "Supported coverage needs current positive sentence checks",

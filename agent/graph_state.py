@@ -2,16 +2,22 @@
 
 from typing import TypedDict
 
+from .contract_base import StopReason
 from .contracts import (
     Analysis,
     DraftBundle,
     EssayRequest,
+    EssayResult,
     EvidenceVersion,
     Fact,
     IntegrationReport,
     Outline,
+    RepairLogEntry,
+    Review,
+    ReviewControl,
     RevisionContext,
     SectionDraft,
+    Sentence,
     SourceSnapshot,
     TechnicalIssue,
     WritingReport,
@@ -37,8 +43,18 @@ class EssayUpdate(TypedDict, total=False):
     outline: Outline
     section_drafts: tuple[SectionDraft, ...]
     writing_report: WritingReport
+    fallback_provenance: tuple[Sentence, ...]
     candidate_bundle: DraftBundle
     integration_report: IntegrationReport
+    reviewed_bundle: DraftBundle
+    review: Review
+    best_bundle: DraftBundle
+    best_review: Review
+    repair_count: int
+    repair_log: tuple[RepairLogEntry, ...]
+    review_control: ReviewControl
+    stop_reason: StopReason | None
+    result: EssayResult
     usage: tuple[GenerationUsage, ...]
     technical_issues: tuple[TechnicalIssue, ...]
 

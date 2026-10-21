@@ -119,15 +119,7 @@ def validate_composition(ctx: ContractContext) -> None:
             )
     if ctx.bundle is not None:
         bundle = ctx.bundle
-        if ctx.integration_report is not None and bundle_sentences(
-            ctx.integration_report.baseline_bundle
-        ):
-            fallback.update(
-                sid
-                for edit in ctx.integration_report.edits
-                if edit.operation == "add_fallback"
-                for sid in edit.after_sentence_ids
-            )
+        fallback.update(explicit_fallback_ids(ctx, bundle))
         require(bundle.evidence_version == ctx.evidence_version, "evidence_version", "bundle")
         _ = unique((p.paragraph_id for p in bundle.paragraphs), "bundle paragraphs")
         validate_sentences(bundle_sentences(bundle), ctx, fallback)
@@ -143,3 +135,42 @@ def validate_composition(ctx: ContractContext) -> None:
             "personalization",
             "A bundle without applicant-grounded claims is non-personalized",
         )
+
+
+def explicit_fallback_ids(ctx: ContractContext, bundle: DraftBundle) -> set[str]:
+    """Validate stage-owned fallback provenance without broadening ordinary sentence rules."""
+    fallback: set[str] = set()
+    current = {s.sentence_id: s for s in bundle_sentences(bundle)}
+    for original in ctx.fallback_provenance:
+        require(
+            original.claim_kind == "general_statement"
+            and not original.fact_ids
+            and not original.section_ids
+            and current.get(original.sentence_id) == original,
+            "fallback_provenance",
+            "Only exact unchanged explicit fallback can be inherited",
+        )
+        fallback.add(original.sentence_id)
+    if ctx.integration_report is not None and bundle_sentences(
+        ctx.integration_report.baseline_bundle
+    ):
+        fallback.update(
+            sid
+            for edit in ctx.integration_report.edits
+            if edit.operation == "add_fallback"
+            for sid in edit.after_sentence_ids
+        )
+    if (
+        ctx.review is not None
+        and ctx.review.version_id == bundle.version_id
+        and ctx.review.evidence_version == bundle.evidence_version == ctx.evidence_version
+        and ctx.review.review_status in ("partial", "unavailable")
+        and bundle.personalization == "non_personalized"
+        and bundle_sentences(bundle)
+        and all(
+            s.claim_kind == "general_statement" and not s.section_ids and not s.fact_ids
+            for s in bundle_sentences(bundle)
+        )
+    ):
+        fallback.update(s.sentence_id for s in bundle_sentences(bundle))
+    return fallback

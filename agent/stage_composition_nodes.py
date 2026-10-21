@@ -145,6 +145,12 @@ async def integrate_draft(state: EssayState, deps: SupervisorDeps) -> EssayUpdat
         issues += (generation_issue("integrate_draft", error),)
     validate_contract(integration_context(payload, bundle, report))
     return {
+        "fallback_provenance": tuple(
+            s
+            for p in bundle.paragraphs
+            for s in p.sentences
+            if not s.section_ids and not s.fact_ids and s.claim_kind == "general_statement"
+        ),
         "candidate_bundle": bundle,
         "integration_report": report,
         "technical_issues": issues,
