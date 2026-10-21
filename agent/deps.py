@@ -1,17 +1,45 @@
-"""Wave 13 — 의존성 주입.
+"""Typed dependencies injected into the existing supervisor graph."""
 
-노드 함수가 closure의 지역 변수에 암묵적으로 기대지 않도록, supervisor가 쓰는 모든
-의존성을 SupervisorDeps 하나에 명시적으로 담아 functools.partial로 각 노드에 주입한다.
-파일을 어디로 옮겨도, 단위 테스트에서 mock deps로 갈아 끼워도 동작이 같다.
-"""
 from dataclasses import dataclass
-from typing import Any
+from typing import Protocol
+
+from .essay_llm import EssayLLM
+from .mcp_materials import CompanyMaterial
 
 
-@dataclass
+class EssayMaterials(Protocol):
+    """The graph consumes current calls, never shared diagnostic history."""
+
+    async def search_company_job_materials(
+        self,
+        company_name: str,
+        job_title: str | None = None,
+    ) -> tuple[CompanyMaterial, ...]:
+        """Return bounded immutable material records from the current lookup."""
+        ...
+
+    async def writing_guide(self, question_type: str) -> str:
+        """Read the discovered guide or the matching local policy."""
+        ...
+
+    async def writing_prompt(self, question_type: str) -> str:
+        """Read the discovered procedure or the matching local policy."""
+        ...
+
+
+class SessionStore(Protocol):
+    """The store remains lifespan-owned and unused by generation nodes."""
+
+    def close(self) -> None:
+        """Release the service-owned connection."""
+        ...
+
+
+@dataclass(frozen=True, slots=True)
 class SupervisorDeps:
-    fast_llm: Any        # Wave 10a — 분류/계획 등 짧은 단계용 저비용 모델
-    quality_llm: Any     # Wave 10a — 최종 답변 작성용 고품질 모델
-    mcp: Any             # Wave 2  — MCP stdio 클라이언트 (Tool/Resource/Prompt)
-    session_store: Any   # Wave 12 — SQLite 세션 저장소
-    version: str         # Wave 14 — SUPERVISOR_VERSION (v1/v2)
+    """One service-owned pair of providers and optional shared resources."""
+
+    fast_llm: EssayLLM
+    quality_llm: EssayLLM
+    mcp: EssayMaterials | None = None
+    session_store: SessionStore | None = None
