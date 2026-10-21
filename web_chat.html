@@ -1,211 +1,110 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<title>운영 에이전트 채팅 (Vue)</title>
-<style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body {
-    margin: 0; height: 100vh; display: flex; flex-direction: column;
-    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
-    background: #1e1e2e; color: #e2e2f0;
-    overflow: hidden;   /* #log만 스크롤되게, 바디 자체는 늘어나지 않게 고정 */
-  }
-  #app {
-    flex: 1; min-height: 0;   /* Vue 마운트 루트가 header/#log/form을 감싸므로,
-                                 body의 flex 흐름이 여기까지 이어지게 한다 */
-    display: flex; flex-direction: column;
-  }
-  header {
-    padding: 14px 20px; background: #262638; border-bottom: 1px solid #3a3a52;
-    font-weight: 600; font-size: 15px;
-  }
-  header span { color: #8b8bd8; font-weight: 400; font-size: 13px; margin-left: 8px; }
-  #log {
-    flex: 1; min-height: 0;   /* flex 자식 기본 최소높이(콘텐츠 크기)를 풀어줘야
-                                 내용이 길어져도 바디가 안 늘어나고 여기서만 스크롤됨 */
-    overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px;
-  }
-  #log::-webkit-scrollbar { width: 9px; }
-  #log::-webkit-scrollbar-track { background: transparent; }
-  #log::-webkit-scrollbar-thumb { background: #3a3a52; border-radius: 6px; }
-  #log::-webkit-scrollbar-thumb:hover { background: #4a4a68; }
-  .row { display: flex; }
-  .row.user { justify-content: flex-end; }
-  .bubble {
-    max-width: 70%; padding: 10px 14px; border-radius: 14px; line-height: 1.5;
-    font-size: 14px; white-space: pre-wrap;
-  }
-  .row.user .bubble { background: #5b5bd6; color: white; border-bottom-right-radius: 4px; }
-  .row.agent .bubble { background: #2e2e42; border-bottom-left-radius: 4px; }
-  .steps {
-    max-width: 70%; font-size: 12px; color: #9a9ac0; padding: 6px 14px;
-    display: flex; flex-direction: column; gap: 3px;
-  }
-  .steps .step::before { content: "⏳ "; }
-  .steps .step.done::before { content: "✓ "; color: #7ee787; }
-  .prompt-box {
-    flex-shrink: 0;   /* #log가 스크롤 영역이 되면서(min-height:0) <details>가 flex
-                         자식으로서 내용 없이 찌그러지는 걸 방지 */
-    max-width: 70%; margin-top: -4px; background: #17171f; border: 1px solid #3a3a52;
-    border-radius: 10px; font-size: 12px; overflow: hidden;
-  }
-  .prompt-box summary {
-    cursor: pointer; padding: 7px 12px; color: #8b8bd8; user-select: none;
-    list-style: none;
-  }
-  .prompt-box summary::-webkit-details-marker { display: none; }
-  .prompt-box summary::before { content: "🔍 "; }
-  .prompt-box[open] summary::before { content: "🔽 "; }
-  .prompt-box pre {
-    margin: 0; padding: 10px 12px; border-top: 1px solid #3a3a52;
-    background: #11111a; color: #c3c3e0; white-space: pre-wrap; word-break: break-word;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace; max-height: 320px; overflow-y: auto;
-  }
-  form { display: flex; gap: 8px; padding: 14px 20px; background: #262638; border-top: 1px solid #3a3a52; }
-  input {
-    flex: 1; padding: 11px 14px; border-radius: 10px; border: 1px solid #3a3a52;
-    background: #1e1e2e; color: #e2e2f0; font-size: 14px;
-  }
-  input:focus { outline: 1px solid #5b5bd6; }
-  button {
-    padding: 11px 20px; border-radius: 10px; border: none; background: #5b5bd6;
-    color: white; font-size: 14px; cursor: pointer;
-  }
-  button:disabled { background: #3a3a52; cursor: default; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>자기소개서 작성 도우미</title>
+  <link rel="stylesheet" href="/web_assets/tokens.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script type="module" src="/web_assets/app.js"></script>
 </head>
 <body>
-<div id="app">
-  <header>운영 인시던트 대응 에이전트 <span>{{ backendLabel }}</span></header>
-  <div id="log" ref="logEl">
-    <template v-for="item in log" :key="item.id">
-      <div v-if="item.kind === 'user'" class="row user">
-        <div class="bubble">{{ item.text }}</div>
-      </div>
-
-      <div v-else-if="item.kind === 'steps'" class="steps">
-        <div v-for="(step, i) in item.steps" :key="i" class="step">{{ step }}</div>
-      </div>
-
-      <div v-else-if="item.kind === 'agent'" class="row agent">
-        <div class="bubble">{{ item.text }}</div>
-      </div>
-
-      <details v-else-if="item.kind === 'prompt'" class="prompt-box">
-        <summary>LLM에 전달된 최종 프롬프트 보기</summary>
-        <pre>{{ item.text }}</pre>
-      </details>
+<div id="app" v-cloak>
+  <ui-shell title="자기소개서 작성 도우미" :subtitle="backendLabel">
+    <template #header-actions>
+      <ui-button tone="quiet" :disabled="locked" @click="newDocument">새 문서</ui-button>
     </template>
-  </div>
-  <form @submit.prevent="onSubmit">
-    <input
-      v-model="input"
-      autocomplete="off"
-      placeholder="예: auth-service 로그인 응답이 느려졌어요. 원인 확인해주세요"
-    />
-    <button type="submit" :disabled="sending">보내기</button>
-  </form>
+    <div class="ui-intro">
+      <p class="ui-eyebrow">경험에서 시작하는 나의 글</p>
+      <h1>생각을 정리하고,<br>나의 초안으로.</h1>
+      <p class="ui-muted">적을 내용이 없어도 시작할 수 있어요. 초안을 읽은 뒤 필요한 부분만 보완해 주세요.</p>
+      <p v-if="health" class="ui-field-hint">{{ health.llm_backend === 'fake' ? '테스트 모드입니다. 실제 모델로 작성한 결과가 아닙니다.' : '작성 모델: ' + health.fast_model + ' · 검토 모델: ' + health.quality_model }}</p>
+    </div>
+    <ui-notice v-if="error" title="요청을 확인해 주세요" tone="error" live>{{ error }}</ui-notice>
+    <ui-notice v-if="message" title="현재 상태" live>{{ message }}</ui-notice>
+    <ui-notice v-if="storageWarning" title="자동 복원 안내" tone="warning">{{ storageWarning }}</ui-notice>
+    <div v-if="lookupId" class="ui-cluster">
+      <ui-button :disabled="locked" @click="lookupSafely(lookupId)">저장 결과 조회</ui-button>
+      <ui-button v-if="canRetry" :disabled="locked" @click="retryPending">같은 요청 다시 확인</ui-button>
+      <span class="ui-field-hint">연결이 끊겼다면 먼저 저장 결과를 확인해 주세요.</span>
+    </div>
+    <ui-panel id="input-panel" title="작성할 내용" description="모든 항목은 선택입니다. 입력한 원문은 결과 본문과 구분해 보관합니다.">
+      <ui-disclosure :title="result ? '원문 추가·정정과 새 버전 작성' : '입력 항목 보기'" :open="!result || editing">
+        <form @submit.prevent="submit" novalidate class="ui-stack">
+          <fieldset :disabled="locked" class="ui-form-fields ui-stack">
+            <div class="ui-field-grid">
+              <ui-field id="company-name" label="기업명" v-model="form.company_name" placeholder="지원할 기업"></ui-field>
+              <ui-field id="job-title" label="직무" v-model="form.job_title" placeholder="지원할 직무"></ui-field>
+            </div>
+            <ui-field id="essay-question" label="자기소개서 문항" v-model="form.question" multiline placeholder="문항이 있다면 그대로 붙여 넣어 주세요"></ui-field>
+            <section v-for="group in sourceGroups" :key="group.key" class="ui-stack">
+              <div v-for="(source, index) in form[group.key]" :key="source.source_id" class="ui-stack">
+                <ui-field :id="group.key + '-' + index" :label="group.title + (form[group.key].length > 1 ? ' ' + (index + 1) : '')" v-model="source.text" multiline :hint="index === 0 ? group.hint : undefined"></ui-field>
+                <div v-if="form[group.key].length > 1"><ui-button tone="quiet" @click="form[group.key].splice(index, 1)">{{ group.title }} {{ index + 1 }} 삭제</ui-button></div>
+              </div>
+              <div><ui-button @click="form[group.key].push(newSource())">{{ group.title }} 추가</ui-button></div>
+            </section>
+            <ui-field id="job-posting" label="채용 공고 원문" v-model="form.job_posting_text" multiline></ui-field>
+            <div class="ui-field-grid">
+              <ui-field id="tone" label="문체" v-model="form.tone"></ui-field>
+              <ui-field id="max-chars" label="최대 글자 수" v-model="form.max_chars" placeholder="제한이 없다면 비워 두세요" hint="양의 정수를 입력해 주세요."></ui-field>
+            </div>
+            <div class="ui-cluster">
+              <ui-check id="spaces" v-model="form.include_spaces">공백 포함</ui-check>
+              <ui-check id="newlines" v-model="form.include_newlines">줄바꿈 포함</ui-check>
+              <ui-check id="subtitle-count" v-model="form.include_subtitle">소제목을 글자 수에 포함</ui-check>
+            </div>
+            <ui-field id="revision-note" label="작성·수정 요청" v-model="form.revision_instruction" multiline :rows="2" placeholder="예: 더 담백하게 써 주세요" hint="새로운 경험이나 사실 정정은 위의 원문 항목에 적어 주세요."></ui-field>
+            <section v-if="selectedQuestion" class="ui-stack ui-question-editor">
+              <h3>선택한 보완 항목</h3>
+              <p class="ui-prose">{{ selectedQuestion.missing_detail }}</p>
+              <label class="ui-field" for="response-kind"><span>답변 방식</span>
+                <select id="response-kind" class="ui-input" v-model="responseKind">
+                  <option value="answer">답변 추가</option><option value="unavailable">확인 불가</option><option value="not_needed">답변하지 않음</option>
+                </select>
+              </label>
+              <ui-field id="question-answer" label="보완 답변" v-model="answer" multiline :disabled="responseKind !== 'answer'" hint="확인 불가 또는 답변하지 않음은 같은 질문을 다시 요구하지 않도록 전달됩니다."></ui-field>
+              <div><ui-button tone="quiet" @click="selectedQuestion = null">이번 보완 선택 취소</ui-button></div>
+            </section>
+            <p v-if="form.question_updates.length" class="ui-field-hint">이전 보완 답변과 처리 상태 {{ form.question_updates.length }}개를 함께 유지합니다.</p>
+            <div class="ui-cluster"><ui-button tone="primary" type="submit" :busy="busy" busy-label="작성 중" :disabled="loading" icon="arrow">{{ result ? '새 버전 작성' : '초안 작성' }}</ui-button><p class="ui-field-hint">비워 두어도 작성할 수 있습니다.</p></div>
+          </fieldset>
+        </form>
+      </ui-disclosure>
+    </ui-panel>
+    <ui-panel v-if="busy || completed.length" id="progress" title="작성 진행">
+      <ui-steps :active="activeStep" :completed="completed" :repair-count="repairs"></ui-steps>
+      <p class="ui-field-hint">{{ busy ? '검토 전 초안은 표시하지 않습니다.' : rendered ? '결과 수신과 화면 표시가 완료되었습니다.' : '진행 정보만으로 결과 수신을 판단하지 않습니다.' }}</p>
+    </ui-panel>
+    <ui-panel v-if="versions.length || restoredInput" id="saved" title="저장된 버전과 원문">
+      <div class="ui-stack">
+        <label v-if="versions.length" for="version-choice" class="ui-field"><span>버전 선택</span>
+          <select id="version-choice" class="ui-input" :value="selectedRequest" :disabled="locked" @change="lookupSafely($event.target.value)">
+            <option v-for="(version, index) in versions" :key="version.request_id" :value="version.request_id">저장 버전 {{ index + 1 }} · {{ version.created_at }}</option>
+          </select>
+        </label>
+        <ui-disclosure v-if="restoredInput" title="저장된 원문 확인 · 읽기 전용">
+          <div class="ui-stack">
+            <p class="ui-field-hint">서버에 저장된 입력입니다. 보완하려면 위의 원문 편집란을 사용해 주세요.</p>
+            <ui-field id="saved-question" label="저장된 문항" :model-value="restoredInput.question || ''" multiline readonly :optional="false"></ui-field>
+            <template v-for="group in sourceGroups" :key="group.key">
+              <ui-field v-for="(source, index) in restoredInput[group.key]" :key="source.source_id" :id="'saved-' + group.key + '-' + index" :label="group.title + ' ' + (index + 1)" :model-value="source.text" multiline readonly :optional="false"></ui-field>
+            </template>
+          </div>
+        </ui-disclosure>
+      </div>
+    </ui-panel>
+    <result-view v-if="result" :result="result" :context="resultInput" :persistence="persistence" :busy="locked" :copy-status="copyStatus" @copy="copy" @supplement="supplement"></result-view>
+    <ui-panel v-if="copyFallback" id="copy-fallback" title="직접 복사">
+      <ui-field id="manual-copy" label="제출용 텍스트" :model-value="result.copy_text" multiline readonly :optional="false" :rows="8"></ui-field>
+    </ui-panel>
+    <div v-if="result" class="ui-cluster">
+      <ui-button icon="copy" @click="copy">현재 초안 복사</ui-button>
+      <ui-button :disabled="locked" icon="edit" @click="supplement()">원문 보완</ui-button>
+    </div>
+    <ui-empty v-else-if="!busy" title="초안을 함께 만들어 볼까요?">정리되지 않은 메모도 좋습니다. 지금 떠오르는 내용이 없어도 위의 작성 버튼으로 시작할 수 있어요.</ui-empty>
+  </ui-shell>
 </div>
-
-<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-<script>
-const { createApp, ref, reactive, nextTick } = Vue;
-
-const STEP_LABELS = {
-  PlanCreated: e => `계획 수립: 할 일 ${e.task_count}가지${e.targets?.length ? ` (시스템: ${e.targets.join(', ')})` : ''}`,
-  GateApplied: e => e.removed_analysis_tasks ? `불필요한 작업 ${e.removed_analysis_tasks}건 제거` : null,
-  TaskCompleted: e => (e.source === 'monitoring'
-      ? `모니터링 지표 확인 (시스템: ${e.target})`
-      : `대응 매뉴얼(runbook) 조회 (장애유형: ${e.target})`) + (e.retries ? ' (재시도 성공)' : ''),
-  ReplanCheck: e => e.is_sufficient ? null : `정보 부족 → 장애유형 "${e.target}"로 추가 조사`,
-  DraftWritten: e => `답변 초안 작성 (시도 ${e.attempt})`,
-  Validation: e => e.verdict === '합격' ? '검수 통과' : '검수 반려 → 다시 작성',
-  Finalize: () => '최종 답변 완성',
-};
-
-createApp({
-  setup() {
-    const backendLabel = ref('all_total_vue');
-    const log = ref([]);
-    const input = ref('');
-    const sending = ref(false);
-    const logEl = ref(null);
-    const thread = 't-web-' + Math.random().toString(36).slice(2, 8);
-    let nextId = 0;
-
-    fetch('/health').then(r => r.json()).then(h => {
-      backendLabel.value = `${h.llm_backend} 실모델(${h.fast_llm}/${h.quality_llm}) · all_total_vue`;
-    }).catch(() => {});
-
-    async function scrollToBottom() {
-      await nextTick();
-      if (logEl.value) logEl.value.scrollTop = logEl.value.scrollHeight;
-    }
-
-    function onSubmit() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      log.value.push({ id: nextId++, kind: 'user', text });
-      input.value = '';
-      sending.value = true;
-      scrollToBottom();
-
-      const stepsItem = reactive({ id: nextId++, kind: 'steps', steps: [] });
-      log.value.push(stepsItem);
-      scrollToBottom();
-
-      const url = `/chat/stream?message=${encodeURIComponent(text)}&thread_id=${encodeURIComponent(thread)}`;
-      const es = new EventSource(url);
-      let streamItem = null;
-      let streamAttempt = null;   // write_node 재작성(attempt 증가) 시 새 말풍선으로 끊는다
-
-      es.onmessage = (event) => {
-        if (event.data === '[DONE]') { es.close(); sending.value = false; return; }
-        let e;
-        try { e = JSON.parse(event.data); } catch { return; }
-
-        if (e.type === 'AnswerToken') {
-          if (!streamItem || streamAttempt !== e.attempt) {
-            streamItem = reactive({ id: nextId++, kind: 'agent', text: '' });
-            log.value.push(streamItem);
-            streamAttempt = e.attempt;
-          }
-          streamItem.text += e.delta;
-          scrollToBottom();
-          return;
-        }
-
-        if (e.type === 'FinalAnswer') {
-          if (!streamItem) {
-            streamItem = reactive({ id: nextId++, kind: 'agent', text: '' });
-            log.value.push(streamItem);
-          }
-          streamItem.text = e.reply;   // 토큰 합산 결과와 서버의 최종 텍스트를 일치시킨다
-          if (e.prompt) log.value.push({ id: nextId++, kind: 'prompt', text: e.prompt });
-          streamItem = null;
-          streamAttempt = null;
-          scrollToBottom();
-          return;
-        }
-
-        const fn = STEP_LABELS[e.type];
-        if (!fn) return;
-        const label = fn(e);
-        if (!label) return;
-        stepsItem.steps.push(label);
-        scrollToBottom();
-      };
-
-      es.onerror = () => { es.close(); sending.value = false; };
-    }
-
-    return { backendLabel, log, input, sending, logEl, onSubmit };
-  },
-}).mount('#app');
-</script>
+<noscript>작성 도우미를 사용하려면 JavaScript를 켜 주세요.</noscript>
 </body>
 </html>
