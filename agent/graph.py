@@ -1,67 +1,27 @@
 """Essay stages reuse StateGraph, async nodes and explicit partial injection."""
 
 from functools import partial
-from typing import TypedDict
+from typing import Literal, assert_never
 
 from .contract_base import ContractViolation
 from .contracts import (
-    Analysis,
     ContractContext,
-    DraftBundle,
-    EssayRequest,
-    EvidenceVersion,
-    Fact,
-    Outline,
-    RevisionContext,
-    SourceSnapshot,
-    TechnicalIssue,
     validate_contract,
 )
 from .deps import SupervisorDeps
-from .essay_llm import GenerationError, GenerationUsage
+from .essay_llm import GenerationError
+from .graph_state import EssayState, EssayUpdate
 from .langgraph_boundary import END, START, CompiledGraph, StateGraph
 from .mcp_materials import local_guide, local_prompt
 from .stage_analysis_models import AnalysisOutput
 from .stage_analysis_rules import analysis_fallback, normalize_analysis
+from .stage_composition_nodes import integrate_draft, write_sections
+from .stage_issues import generation_issue
 from .stage_sources import SourceInput, prepare_analysis
 from .stage_structure_models import StructureOutput, StructurePayload
 from .stage_structure_rules import structure_fallback
 
-
-class EssayInput(TypedDict):
-    """Server-owned seed required before the first node executes."""
-
-    request: EssayRequest
-    evidence_version: EvidenceVersion
-    revision_context: RevisionContext
-
-
-class EssayUpdate(TypedDict, total=False):
-    """Node-local updates never replace immutable request context."""
-
-    previous_draft: DraftBundle | None
-    sources: tuple[SourceSnapshot, ...]
-    facts: tuple[Fact, ...]
-    analysis: Analysis
-    outline: Outline
-    usage: tuple[GenerationUsage, ...]
-    technical_issues: tuple[TechnicalIssue, ...]
-
-
-class EssayState(EssayInput, EssayUpdate):
-    """Required run seed plus fields accumulated by the ordered stages."""
-
-
-def generation_issue(node: str, error: GenerationError) -> TechnicalIssue:
-    """Expose only sanitized provider category and actual attempt accounting."""
-    return TechnicalIssue(
-        node=node,
-        code=error.kind.value,
-        attempts=len(error.usage.attempts),
-        exhausted=error.retryable,
-        recovered=True,
-        message="모델 단계 오류 후 보존된 입력으로 대체 경로를 사용했습니다.",
-    )
+__all__ = ["EssayState", "EssayUpdate", "build_graph", "integrate_draft", "write_sections"]
 
 
 async def analyze_context(state: EssayState, deps: SupervisorDeps) -> EssayUpdate:
@@ -154,6 +114,8 @@ async def plan_structure(state: EssayState, deps: SupervisorDeps) -> EssayUpdate
 
 def build_graph(
     deps: SupervisorDeps,
+    *,
+    stop_after: Literal["plan_structure", "integrate_draft"] = "integrate_draft",
 ) -> CompiledGraph[EssayState, EssayUpdate]:
     """Compile the released stages; later tickets extend this same graph in order."""
     builder: StateGraph[EssayState, EssayUpdate] = StateGraph(EssayState)
@@ -161,5 +123,15 @@ def build_graph(
     _ = builder.add_node("plan_structure", partial(plan_structure, deps=deps))
     _ = builder.add_edge(START, "analyze_context")
     _ = builder.add_edge("analyze_context", "plan_structure")
-    _ = builder.add_edge("plan_structure", END)
+    match stop_after:
+        case "plan_structure":
+            _ = builder.add_edge("plan_structure", END)
+        case "integrate_draft":
+            _ = builder.add_node("write_sections", partial(write_sections, deps=deps))
+            _ = builder.add_node("integrate_draft", partial(integrate_draft, deps=deps))
+            _ = builder.add_edge("plan_structure", "write_sections")
+            _ = builder.add_edge("write_sections", "integrate_draft")
+            _ = builder.add_edge("integrate_draft", END)
+        case _:
+            assert_never(stop_after)
     return builder.compile()

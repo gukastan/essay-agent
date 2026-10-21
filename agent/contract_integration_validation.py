@@ -38,6 +38,10 @@ def validate_integration(ctx: ContractContext) -> None:
             for allocation in draft.allocations
             for s in allocation.sentences
         }
+        if not original_sentences and bundle_sentences(report.baseline_bundle):
+            original_sentences = {
+                sentence.sentence_id: sentence for sentence in ctx.writing_report.fallback_sentences
+            }
         require(
             {s.sentence_id: s for s in bundle_sentences(report.baseline_bundle)}
             == original_sentences,

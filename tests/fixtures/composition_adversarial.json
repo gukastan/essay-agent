@@ -1,0 +1,636 @@
+{
+  "evidence_version": "evidence-fiction-1",
+  "sources": [
+    {
+      "source_id": "source-library",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "applicant",
+      "text": "I sorted library books. I learned to agree on a method before starting.",
+      "metadata": {
+        "origin": "user",
+        "label": "Fictional library event",
+        "uri": null,
+        "catalog": null
+      },
+      "source_order": 0
+    },
+    {
+      "source_id": "source-garden",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "applicant",
+      "text": "I watered the garden.",
+      "metadata": {
+        "origin": "user",
+        "label": "Fictional garden event",
+        "uri": null,
+        "catalog": null
+      },
+      "source_order": 1
+    },
+    {
+      "source_id": "source-company",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "company",
+      "text": "Fictional Acorn runs a library.",
+      "metadata": {
+        "origin": "mcp",
+        "label": "Fictional company",
+        "uri": "https://example.invalid/acorn",
+        "catalog": null
+      },
+      "source_order": 2
+    }
+  ],
+  "facts": [
+    {
+      "fact_id": "fact-library",
+      "source_id": "source-library",
+      "source_kind": "applicant",
+      "quote": "I sorted library books.",
+      "span": {
+        "start": 0,
+        "end": 23
+      },
+      "experience_id": "event-library",
+      "claim_kind": "personal_event",
+      "attribution": "applicant",
+      "information_state": "available",
+      "conflict_ids": []
+    },
+    {
+      "fact_id": "fact-garden",
+      "source_id": "source-garden",
+      "source_kind": "applicant",
+      "quote": "I watered the garden.",
+      "span": {
+        "start": 0,
+        "end": 21
+      },
+      "experience_id": "event-garden",
+      "claim_kind": "personal_event",
+      "attribution": "applicant",
+      "information_state": "available",
+      "conflict_ids": []
+    },
+    {
+      "fact_id": "fact-company",
+      "source_id": "source-company",
+      "source_kind": "company",
+      "quote": "Fictional Acorn runs a library.",
+      "span": {
+        "start": 0,
+        "end": 31
+      },
+      "experience_id": null,
+      "claim_kind": "external_context",
+      "attribution": "Fictional Acorn",
+      "information_state": "available",
+      "conflict_ids": []
+    },
+    {
+      "fact_id": "fact-learning",
+      "source_id": "source-library",
+      "source_kind": "applicant",
+      "quote": "I learned to agree on a method before starting.",
+      "span": {
+        "start": 24,
+        "end": 71
+      },
+      "experience_id": "event-library",
+      "claim_kind": "stated_view",
+      "attribution": "applicant",
+      "information_state": "available",
+      "conflict_ids": []
+    }
+  ],
+  "analysis": {
+    "analysis_status": "complete",
+    "question_type": "experience",
+    "requirements": [
+      {
+        "requirement_id": "req-action",
+        "description": "Describe your action.",
+        "resolution": "interpreted",
+        "origin": "explicit",
+        "information_role": "direct",
+        "required_by_prompt": true,
+        "application_condition": null,
+        "reason": "Fictional prompt explicitly asks action and result."
+      },
+      {
+        "requirement_id": "req-result",
+        "description": "Explain what you learned.",
+        "resolution": "interpreted",
+        "origin": "explicit",
+        "information_role": "direct",
+        "required_by_prompt": true,
+        "application_condition": null,
+        "reason": "Fictional prompt explicitly asks action and result."
+      },
+      {
+        "requirement_id": "req-context",
+        "description": "Optional company context.",
+        "resolution": "interpreted",
+        "origin": "interpreted",
+        "information_role": "supporting",
+        "required_by_prompt": false,
+        "application_condition": null,
+        "reason": "Fictional prompt explicitly asks action and result."
+      }
+    ],
+    "writing_conditions": [],
+    "company_role_context": [
+      {
+        "description": "Fictional library operator",
+        "fact_ids": [
+          "fact-company"
+        ],
+        "reason": "External company context only."
+      }
+    ],
+    "experience_candidates": [
+      {
+        "experience_id": "event-library",
+        "fact_ids": [
+          "fact-library",
+          "fact-learning"
+        ],
+        "source_order": 0
+      },
+      {
+        "experience_id": "event-garden",
+        "fact_ids": [
+          "fact-garden"
+        ],
+        "source_order": 1
+      }
+    ],
+    "answer_candidates": [
+      {
+        "candidate_id": "answer-library",
+        "experience_ids": [
+          "event-library"
+        ],
+        "fact_ids": [
+          "fact-library",
+          "fact-learning"
+        ],
+        "requirement_ids": [
+          "req-action",
+          "req-result"
+        ],
+        "source_order": 0
+      },
+      {
+        "candidate_id": "answer-garden",
+        "experience_ids": [
+          "event-garden"
+        ],
+        "fact_ids": [
+          "fact-garden"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "source_order": 1
+      },
+      {
+        "candidate_id": "answer-company",
+        "experience_ids": [],
+        "fact_ids": [
+          "fact-company"
+        ],
+        "requirement_ids": [
+          "req-context"
+        ],
+        "source_order": 2
+      }
+    ],
+    "evidence_links": [
+      {
+        "requirement_id": "req-action",
+        "candidate_id": "answer-garden",
+        "fact_ids": ["fact-garden"],
+        "information_role": "direct",
+        "information_state": "available",
+        "applicability": "applies",
+        "use_status": "candidate",
+        "reason": "The distinct selected garden event explicitly supplies an action."
+      },
+      {
+        "requirement_id": "req-action",
+        "candidate_id": "answer-library",
+        "fact_ids": [
+          "fact-library"
+        ],
+        "information_role": "direct",
+        "information_state": "available",
+        "applicability": "applies",
+        "use_status": "candidate",
+        "reason": "An action is supplied."
+      },
+      {
+        "requirement_id": "req-result",
+        "candidate_id": "answer-library",
+        "fact_ids": [
+          "fact-learning"
+        ],
+        "information_role": "direct",
+        "information_state": "available",
+        "applicability": "applies",
+        "use_status": "candidate",
+        "reason": "No result is supplied."
+      },
+      {
+        "requirement_id": "req-context",
+        "candidate_id": "answer-company",
+        "fact_ids": [
+          "fact-company"
+        ],
+        "information_role": "supporting",
+        "information_state": "available",
+        "applicability": "not_applicable",
+        "use_status": "excluded",
+        "reason": "Company description does not answer the requested personal event."
+      }
+    ],
+    "competency_candidates": [],
+    "role_links": [],
+    "gaps": [],
+    "held_claims": [],
+    "research_status": "available"
+  },
+  "outline": {
+    "evidence_version": "evidence-fiction-1",
+    "selected_candidate_ids": [
+      "answer-library",
+      "answer-garden"
+    ],
+    "selected_experience_ids": [
+      "event-library",
+      "event-garden"
+    ],
+    "selection_decisions": [
+      {
+        "candidate_id": "answer-library",
+        "decision": "selected",
+        "requirement_ids": [
+          "req-action",
+          "req-result"
+        ],
+        "reason": "Directly supplies an action.",
+        "limits": [
+          "Outcome unknown"
+        ]
+      },
+      {
+        "candidate_id": "answer-garden",
+        "decision": "selected",
+        "requirement_ids": [
+          "req-action"
+        ],
+        "reason": "Keep distinct events separate.",
+        "limits": []
+      }
+    ],
+    "core_answer": "I sorted library books.",
+    "core_answer_fact_ids": [
+      "fact-library"
+    ],
+    "general_direction": null,
+    "composition": "Action then reflection",
+    "composition_reason": "Separate the supplied action from a general explanation.",
+    "requirement_map": [
+      {
+        "requirement_id": "req-action",
+        "section_ids": [
+          "section-action",
+          "section-explanation"
+        ],
+        "planned_coverage": "planned_supported",
+        "gap_ids": [],
+        "reason": "Action supplied."
+      },
+      {
+        "requirement_id": "req-result",
+        "section_ids": [
+          "section-result"
+        ],
+        "planned_coverage": "planned_supported",
+        "gap_ids": [],
+        "reason": "Keep the mandatory result visible."
+      },
+      {
+        "requirement_id": "req-context",
+        "section_ids": [],
+        "planned_coverage": "not_applicable",
+        "gap_ids": [],
+        "reason": "Optional external context excluded."
+      }
+    ],
+    "sections": [
+      {
+        "section_id": "section-action",
+        "requirement_ids": [
+          "req-action"
+        ],
+        "role": "action",
+        "purpose": "Describe the supplied action",
+        "intended_content": "Library sorting action",
+        "allowed_content": "The applicant sorted library books.",
+        "fact_ids": [
+          "fact-library"
+        ],
+        "experience_ids": [
+          "event-library"
+        ],
+        "gap_ids": [],
+        "missing_info": [],
+        "write_mode": "grounded"
+      },
+      {
+        "section_id": "section-explanation",
+        "requirement_ids": [
+          "req-action"
+        ],
+        "role": "action",
+        "purpose": "Describe the supplied action",
+        "intended_content": "Distinct garden event",
+        "allowed_content": "The applicant watered a garden.",
+        "fact_ids": [
+          "fact-garden"
+        ],
+        "experience_ids": [
+          "event-garden"
+        ],
+        "gap_ids": [],
+        "missing_info": [],
+        "write_mode": "grounded"
+      },
+      {
+        "section_id": "section-result",
+        "requirement_ids": [
+          "req-result"
+        ],
+        "role": "learning",
+        "purpose": "Preserve the applicant's stated learning.",
+        "intended_content": "I learned to agree on a method before starting.",
+        "allowed_content": "I learned to agree on a method before starting.",
+        "fact_ids": [
+          "fact-learning"
+        ],
+        "experience_ids": [
+          "event-library"
+        ],
+        "gap_ids": [],
+        "missing_info": [],
+        "write_mode": "grounded"
+      }
+    ],
+    "paragraphs": [
+      {
+        "paragraph_id": "plan-one",
+        "order": 0,
+        "purpose": "Describe action with explanation.",
+        "allocations": [
+          {
+            "section_id": "section-action",
+            "content_focus": "First action statement",
+            "fact_ids": [
+              "fact-library"
+            ]
+          },
+          {
+            "section_id": "section-explanation",
+            "content_focus": "General explanation",
+            "fact_ids": [
+              "fact-garden"
+            ]
+          }
+        ],
+        "previous_relation": null,
+        "weight": 60,
+        "target_chars": null,
+        "budget_reason": "No maximum was provided."
+      },
+      {
+        "paragraph_id": "plan-two",
+        "order": 1,
+        "purpose": "Continue the same logical action.",
+        "allocations": [
+          {
+            "section_id": "section-action",
+            "content_focus": "Restate the scope without adding a result",
+            "fact_ids": [
+              "fact-library"
+            ]
+          },
+          {
+            "section_id": "section-result",
+            "content_focus": "Stated learning",
+            "fact_ids": [
+              "fact-learning"
+            ]
+          }
+        ],
+        "previous_relation": {
+          "type": "summary",
+          "reason": "Same event and action",
+          "fact_ids": [
+            "fact-library"
+          ]
+        },
+        "weight": 40,
+        "target_chars": null,
+        "budget_reason": "No maximum was provided."
+      }
+    ],
+    "subtitle_plan": {
+      "purpose": "Represent the supplied action",
+      "fact_ids": [
+        "fact-library"
+      ],
+      "held_claims": []
+    },
+    "budget": {
+      "max_chars": null,
+      "subtitle_reserved_chars": null,
+      "separator_chars": 0,
+      "usable_body_chars": null,
+      "constraint_notes": [
+        "Limit unspecified"
+      ]
+    },
+    "design_status": "partial",
+    "planning_notes": [
+      "Omitted result remains required."
+    ],
+    "held_claims": []
+  },
+  "section_drafts": [
+    {
+      "section_id": "section-action",
+      "allocations": [
+        {
+          "planned_paragraph_id": "plan-one",
+          "sentences": [
+            {
+              "sentence_id": "sentence-one",
+              "text": "I sorted library books.",
+              "section_ids": [
+                "section-action"
+              ],
+              "claim_kind": "personal_event",
+              "fact_ids": [
+                "fact-library"
+              ]
+            }
+          ]
+        },
+        {
+          "planned_paragraph_id": "plan-two",
+          "sentences": [
+            {
+              "sentence_id": "sentence-three",
+              "text": "My task was sorting books.",
+              "section_ids": [
+                "section-action"
+              ],
+              "claim_kind": "personal_event",
+              "fact_ids": [
+                "fact-library"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "section-explanation",
+      "allocations": [
+        {
+          "planned_paragraph_id": "plan-one",
+          "sentences": [
+            {
+              "sentence_id": "sentence-two",
+              "text": "I watered the garden.",
+              "section_ids": [
+                "section-explanation"
+              ],
+              "claim_kind": "personal_event",
+              "fact_ids": [
+                "fact-garden"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "section-result",
+      "allocations": [
+        {
+          "planned_paragraph_id": "plan-two",
+          "sentences": [
+            {
+              "sentence_id": "sentence-learning",
+              "text": "I learned to agree on a method before starting.",
+              "section_ids": [
+                "section-result"
+              ],
+              "claim_kind": "stated_view",
+              "fact_ids": [
+                "fact-learning"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "writing_report": {
+    "draft_id": "draft-one",
+    "evidence_version": "evidence-fiction-1",
+    "personalization": "partial",
+    "notes": [],
+    "section_checks": [
+      {
+        "section_id": "section-action",
+        "state": "drafted",
+        "sentence_ids": [
+          "sentence-one",
+          "sentence-three"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "gap_ids": [],
+        "reason": "Action supplied."
+      },
+      {
+        "section_id": "section-explanation",
+        "state": "drafted",
+        "sentence_ids": [
+          "sentence-two"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "gap_ids": [],
+        "reason": "General explanation."
+      },
+      {
+        "section_id": "section-result",
+        "state": "drafted",
+        "sentence_ids": [
+          "sentence-learning"
+        ],
+        "requirement_ids": [
+          "req-result"
+        ],
+        "gap_ids": [],
+        "reason": "Outcome unknown."
+      }
+    ],
+    "length_snapshot": {
+      "body_chars": 121,
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": true,
+      "subtitle_pending": true,
+      "measurement_scope": "body_only",
+      "body_limit_status": "unspecified"
+    },
+    "fallback_sentences": []
+  },
+  "bundle": null,
+  "integration_report": null,
+  "review": null,
+  "result": null,
+  "repair_log": [],
+  "request": {
+    "request_id": "00000000-0000-0000-0000-000000000010",
+    "thread_id": "ffd78f18-7fb7-4d39-989e-78ce17dc7459",
+    "document_id": "00000000-0000-0000-0000-000000000020",
+    "parent_version_id": null,
+    "company_name": null,
+    "job_title": null,
+    "question": "Describe both events and what you learned.",
+    "experiences": [],
+    "user_views": [],
+    "job_posting_text": null,
+    "company_sources": [],
+    "tone": "담백한 존댓말",
+    "length_policy": {
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": true
+    },
+    "revision_instruction": null,
+    "question_updates": []
+  },
+  "parent": null,
+  "revision_context": null
+}

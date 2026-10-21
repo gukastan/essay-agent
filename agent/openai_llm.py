@@ -26,9 +26,11 @@ from .essay_llm import (
     GenerationUsage,
     ModelRole,
     Output,
+    OutputRecovery,
     Stage,
     TokenUsage,
     require_role,
+    validate_output,
 )
 from .essay_prompts import build_prompt
 from .provider_usage import failed_response_usage
@@ -67,6 +69,8 @@ class OpenAILLM:
         stage: Stage,
         payload: ContractModel,
         output_model: type[Output],
+        *,
+        recover: OutputRecovery | None = None,
     ) -> GenerationResult[Output]:
         """Keep native async invocation, SDK errors, and raw messages inside the adapter."""
         require_role(stage, self.role)
@@ -109,9 +113,8 @@ class OpenAILLM:
                 result = await runnable.ainvoke(messages)
                 envelope = _StructuredResponse[output_model].model_validate(result)
                 usage = _message_usage(envelope.raw, self.client.model_name)
-                output = output_model.model_validate(
-                    _require_complete(envelope, usage).model_dump(),
-                    context={"payload": payload},
+                output = validate_output(
+                    _require_complete(envelope, usage), payload, usage, recover
                 )
             except APITimeoutError:
                 raise GenerationError(ErrorKind.TIMEOUT, usage) from None

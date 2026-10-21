@@ -1,11 +1,14 @@
 """A single initial-plus-one budget shared by transport and format failures."""
 
 from collections.abc import Awaitable, Callable
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import anyio
 
 from .essay_llm import GenerationError, GenerationResult, GenerationUsage, Output, TokenUsage
+
+if TYPE_CHECKING:
+    from .contracts import ContractModel
 
 MAX_ATTEMPTS: Final = 2
 
@@ -17,13 +20,18 @@ async def with_retry(
 ) -> GenerationResult[Output]:
     """Retry only normalized failures; cancellation always propagates untouched."""
     attempts: tuple[TokenUsage, ...] = ()
+    recovered: ContractModel | None = None
     for attempt in range(MAX_ATTEMPTS):
         try:
             result = await operation()
         except GenerationError as error:
             attempts += error.usage.attempts
+            if error.recovered is not None:
+                recovered = error.recovered
             if not error.retryable or attempt + 1 == MAX_ATTEMPTS:
-                raise GenerationError(error.kind, GenerationUsage(attempts=attempts)) from None
+                raise GenerationError(
+                    error.kind, GenerationUsage(attempts=attempts), recovered=recovered
+                ) from None
             await anyio.sleep(base_delay)
         else:
             return GenerationResult(

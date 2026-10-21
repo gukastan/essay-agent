@@ -70,7 +70,7 @@ def test_installed_stategraph_streams_two_nodes_in_order_with_fixed_analysis() -
         responses = Responses()
         fast, quality = FastLLM(responses), QualityLLM(responses)
         try:
-            graph = build_graph(SupervisorDeps(fast, quality))
+            graph = build_graph(SupervisorDeps(fast, quality), stop_after="plan_structure")
             updates = [
                 update
                 async for update in graph.astream(

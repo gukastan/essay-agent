@@ -52,7 +52,7 @@ STRUCTURE_POLICY: Final = """2단계 plan_structure: A~G의 설계를 한 응답
 포부/의견은 실제 입장·이유·계획/한계로 구성한다. 관습적 마무리를 강제하지 않는다.
 각 section의 intended_content와 allowed_content를 구분한다. grounded는 허용 근거만,
 general은 비개인 일반 설명, omit은 문장 없이 요구/gap을 보존한다.
-근거 없는 필수 배움은 allowed_content=[]/omit이다. 소제목은 역할/범위만 계획한다.
+근거 없는 필수 배움은 allowed_content="" 및 write_mode="omit"이다. 소제목은 역할/범위만 계획한다.
 문단 allocation에 section_id/content_focus/fact_ids를 연결한다. 분할은 초점을 달리하며
 omit은 빈 물리 문단을 만들지 않는다. 연결에서 시간·비교·인과를 구분한다.
 작성할 문단의 양의 weight 합은 100이다. 직접/핵심 설명을 우선하고 이유를 기록한다.

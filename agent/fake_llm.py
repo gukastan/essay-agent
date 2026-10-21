@@ -12,9 +12,11 @@ from .essay_llm import (
     GenerationUsage,
     ModelRole,
     Output,
+    OutputRecovery,
     Stage,
     TokenUsage,
     require_role,
+    validate_output,
 )
 from .retry import with_retry
 
@@ -48,6 +50,8 @@ class FakeLLM:
         stage: Stage,
         payload: ContractModel,
         output_model: type[Output],
+        *,
+        recover: OutputRecovery | None = None,
     ) -> GenerationResult[Output]:
         """Use the same output contract and retry owner as the live adapter."""
         require_role(stage, self.role)
@@ -64,11 +68,10 @@ class FakeLLM:
                 )
             )
             try:
-                supplied = self.response_factory(stage, payload, output_model)
-                output = output_model.model_validate(
-                    supplied.model_dump(),
-                    context={"payload": payload},
+                supplied = output_model.model_validate(
+                    self.response_factory(stage, payload, output_model).model_dump()
                 )
+                output = validate_output(supplied, payload, usage, recover)
             except (ValidationError, ContractViolation):
                 raise GenerationError(ErrorKind.FORMAT, usage) from None
             return GenerationResult(output=output, usage=usage)

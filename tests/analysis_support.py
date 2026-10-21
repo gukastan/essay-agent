@@ -86,7 +86,7 @@ async def execute(
 ) -> RunView:
     fast, quality = FastLLM(responses), QualityLLM(responses)
     try:
-        graph = build_graph(SupervisorDeps(fast, quality, mcp))
+        graph = build_graph(SupervisorDeps(fast, quality, mcp), stop_after="plan_structure")
         result = await graph.ainvoke(state, {"recursion_limit": 20})
         return RunView.model_validate(result)
     finally:
