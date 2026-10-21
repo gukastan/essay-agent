@@ -240,6 +240,7 @@ def test_capture_analysis_outline_surface() -> None:
         Path(__file__).resolve().parents[2]
         / ".omo/evidence/essay-agent/task-4-analysis-outline.json"
     )
+    artifact.parent.mkdir(parents=True, exist_ok=True)
     _ = artifact.write_text(
         json.dumps(
             [json.loads(result.model_dump_json()) for result in results],

@@ -29,6 +29,7 @@ def test_real_mcp_snapshot_survives_source_change_and_subprocess_closes(tmp_path
     client = MCPClient({"essay": script})
 
     evidence = Path(__file__).resolve().parents[2] / ".omo/evidence/essay-agent/task-4"
+    evidence.mkdir(parents=True, exist_ok=True)
 
     async def scenario() -> None:
         await client.start()

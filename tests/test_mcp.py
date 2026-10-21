@@ -47,6 +47,7 @@ async def test_real_stdio_capabilities() -> None:
         assert guide == local_guide("experience")
         assert prompt == local_prompt("experience")
         assert not client.warnings
+        await anyio.Path(EVIDENCE.parent).mkdir(parents=True, exist_ok=True)
         _ = EVIDENCE.write_text(
             json.dumps(
                 {
@@ -175,6 +176,7 @@ async def test_startup_timeout_terminates_process(tmp_path: Path) -> None:
     assert client.sessions == {}
     with pytest.raises(ProcessLookupError):
         os.kill(int(pidfile.read_text()), 0)
+    await anyio.Path(EVIDENCE.parent).mkdir(parents=True, exist_ok=True)
     _ = EVIDENCE.with_name("task-3-cleanup.json").write_text(
         json.dumps(
             {
@@ -221,6 +223,7 @@ create_server(Path({str(tmp_path)!r})).run(transport='stdio', show_banner=False)
         assert snapshot.metadata.catalog.relative_path == "a.txt"
         assert snapshot.metadata.catalog.source_id == "user:collision"
         assert snapshot.evidence_version == "ev-current"
+        await anyio.Path(EVIDENCE.parent).mkdir(parents=True, exist_ok=True)
         _ = EVIDENCE.with_name("task-3-snapshot.json").write_text(
             snapshot.model_dump_json(indent=2),
             encoding="utf-8",
