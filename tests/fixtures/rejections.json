@@ -1,0 +1,512 @@
+[
+  {
+    "name": "invalid-source-span",
+    "path": [
+      "facts",
+      0,
+      "span",
+      "end"
+    ],
+    "value": 200
+  },
+  {
+    "name": "incorrect-source-quote",
+    "path": [
+      "facts",
+      0,
+      "quote"
+    ],
+    "value": "I increased sales."
+  },
+  {
+    "name": "unknown-fact",
+    "path": [
+      "outline",
+      "sections",
+      0,
+      "fact_ids"
+    ],
+    "value": [
+      "missing-fact"
+    ]
+  },
+  {
+    "name": "cross-event-fact",
+    "path": [
+      "analysis",
+      "experience_candidates",
+      0,
+      "fact_ids"
+    ],
+    "value": [
+      "fact-garden"
+    ]
+  },
+  {
+    "name": "candidate-id-is-not-event-id",
+    "path": [
+      "analysis",
+      "evidence_links",
+      0,
+      "candidate_id"
+    ],
+    "value": "event-library"
+  },
+  {
+    "name": "event-id-is-not-candidate-id",
+    "path": [
+      "outline",
+      "selected_experience_ids"
+    ],
+    "value": [
+      "answer-library"
+    ]
+  },
+  {
+    "name": "required-item-cannot-be-not-applicable",
+    "path": [
+      "analysis",
+      "evidence_links",
+      1,
+      "applicability"
+    ],
+    "value": "not_applicable"
+  },
+  {
+    "name": "mandatory-requirement-map-preserved",
+    "path": [
+      "outline",
+      "requirement_map",
+      1,
+      "planned_coverage"
+    ],
+    "value": "not_applicable"
+  },
+  {
+    "name": "omit-cannot-instruct-personal-assertion",
+    "path": [
+      "outline",
+      "sections",
+      2,
+      "allowed_content"
+    ],
+    "value": "Claim an improved result."
+  },
+  {
+    "name": "omit-cannot-receive-paragraph-allocation",
+    "path": [
+      "outline",
+      "paragraphs",
+      1,
+      "allocations",
+      0,
+      "section_id"
+    ],
+    "value": "section-result"
+  },
+  {
+    "name": "allocation-fact-outside-section",
+    "path": [
+      "outline",
+      "paragraphs",
+      0,
+      "allocations",
+      0,
+      "fact_ids"
+    ],
+    "value": [
+      "fact-garden"
+    ]
+  },
+  {
+    "name": "unknown-limit-keeps-target-null",
+    "path": [
+      "outline",
+      "paragraphs",
+      0,
+      "target_chars"
+    ],
+    "value": 300
+  },
+  {
+    "name": "paragraph-weight-total",
+    "path": [
+      "outline",
+      "paragraphs",
+      0,
+      "weight"
+    ],
+    "value": 90
+  },
+  {
+    "name": "unmapped-sentence-outside-fallback",
+    "path": [
+      "bundle",
+      "paragraphs",
+      0,
+      "sentences",
+      0,
+      "section_ids"
+    ],
+    "value": []
+  },
+  {
+    "name": "sentence-unknown-fact",
+    "path": [
+      "bundle",
+      "paragraphs",
+      0,
+      "sentences",
+      0,
+      "fact_ids"
+    ],
+    "value": [
+      "invented-fact"
+    ]
+  },
+  {
+    "name": "personal-claim-requires-fact",
+    "path": [
+      "bundle",
+      "paragraphs",
+      0,
+      "sentences",
+      0,
+      "fact_ids"
+    ],
+    "value": []
+  },
+  {
+    "name": "stale-source-evidence-version",
+    "path": [
+      "sources",
+      0,
+      "evidence_version"
+    ],
+    "value": "evidence-old"
+  },
+  {
+    "name": "stale-bundle-evidence-version",
+    "path": [
+      "bundle",
+      "evidence_version"
+    ],
+    "value": "evidence-old"
+  },
+  {
+    "name": "subtitle-pending-body-measurement",
+    "path": [
+      "writing_report",
+      "length_snapshot",
+      "subtitle_pending"
+    ],
+    "value": false
+  },
+  {
+    "name": "integration-candidate-version",
+    "path": [
+      "integration_report",
+      "candidate_version_id"
+    ],
+    "value": "version-old"
+  },
+  {
+    "name": "edit-dangling-before-sentence",
+    "path": [
+      "integration_report",
+      "edits",
+      0,
+      "before_sentence_ids"
+    ],
+    "value": [
+      "missing-sentence"
+    ]
+  },
+  {
+    "name": "edit-duplicate-before-sentence",
+    "path": [
+      "integration_report",
+      "edits",
+      1,
+      "before_sentence_ids"
+    ],
+    "value": [
+      "sentence-one"
+    ]
+  },
+  {
+    "name": "edit-missing-after-sentence",
+    "path": [
+      "integration_report",
+      "edits",
+      2,
+      "after_sentence_ids"
+    ],
+    "value": []
+  },
+  {
+    "name": "retained-sentence-text-cannot-change",
+    "path": [
+      "bundle",
+      "paragraphs",
+      0,
+      "sentences",
+      0,
+      "text"
+    ],
+    "value": "I sorted the whole collection."
+  },
+  {
+    "name": "stale-review-version",
+    "path": [
+      "review",
+      "version_id"
+    ],
+    "value": "version-old"
+  },
+  {
+    "name": "stale-review-evidence-version",
+    "path": [
+      "review",
+      "evidence_version"
+    ],
+    "value": "evidence-old"
+  },
+  {
+    "name": "subtitle-claim-must-link-current-body",
+    "path": [
+      "review",
+      "title_review",
+      "candidates",
+      0,
+      "claims",
+      0,
+      "body_sentence_ids"
+    ],
+    "value": [
+      "missing-sentence"
+    ]
+  },
+  {
+    "name": "subtitle-fact-must-support-current-body",
+    "path": [
+      "review",
+      "title_review",
+      "candidates",
+      0,
+      "claims",
+      0,
+      "fact_ids"
+    ],
+    "value": [
+      "fact-garden"
+    ]
+  },
+  {
+    "name": "review-must-check-each-current-sentence",
+    "path": [
+      "review",
+      "sentence_checks"
+    ],
+    "value": []
+  },
+  {
+    "name": "result-excerpt-must-match-selected-sentence",
+    "path": [
+      "result",
+      "structure",
+      0,
+      "locations",
+      0,
+      "excerpts"
+    ],
+    "value": [
+      "I achieved an invented result."
+    ]
+  },
+  {
+    "name": "result-body-must-match-selected-bundle",
+    "path": [
+      "result",
+      "body"
+    ],
+    "value": "A fabricated replacement body."
+  },
+  {
+    "name": "result-copy-must-match-selected-bundle",
+    "path": [
+      "result",
+      "copy_text"
+    ],
+    "value": "A fabricated replacement copy."
+  },
+  {
+    "name": "result-count-must-match-policy",
+    "path": [
+      "result",
+      "character_count"
+    ],
+    "value": 999
+  },
+  {
+    "name": "result-cannot-be-error-envelope",
+    "path": [
+      "result",
+      "generation_status"
+    ],
+    "value": "technical_error"
+  },
+  {
+    "name": "delivery-metadata-outside-result",
+    "path": [
+      "result",
+      "persistence_status"
+    ],
+    "value": "stored"
+  },
+  {
+    "name": "result-cannot-wait-for-information",
+    "path": [
+      "result",
+      "stop_reason"
+    ],
+    "value": "needs_information"
+  },
+  {
+    "name": "review-length-is-current-measurement",
+    "path": [
+      "review",
+      "length_check",
+      "counted_chars"
+    ],
+    "value": 999
+  },
+  {
+    "name": "source-summary-counts-actual-used-facts",
+    "path": [
+      "result",
+      "source_summary",
+      0,
+      "used_fact_count"
+    ],
+    "value": 99
+  },
+  {
+    "name": "result-requirement-status-matches-review",
+    "path": [
+      "result",
+      "structure",
+      0,
+      "requirement_statuses",
+      0,
+      "status"
+    ],
+    "value": "unmet"
+  },
+  {
+    "name": "review-issue-gap-is-known",
+    "path": [
+      "review",
+      "issues",
+      0,
+      "gap_ids"
+    ],
+    "value": [
+      "unknown-gap"
+    ]
+  },
+  {
+    "name": "omit-section-cannot-generate-sentence",
+    "path": [
+      "section_drafts",
+      2,
+      "allocations"
+    ],
+    "value": [
+      {
+        "planned_paragraph_id": "plan-one",
+        "sentences": [
+          {
+            "sentence_id": "invented-result",
+            "text": "I improved the result.",
+            "section_ids": [
+              "section-result"
+            ],
+            "claim_kind": "personal_event",
+            "fact_ids": [
+              "fact-library"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "pending-repair-cannot-be-delivered",
+    "path": [
+      "repair_log"
+    ],
+    "value": [
+      {
+        "attempt": 1,
+        "base_version_id": "version-one",
+        "proposed_version_id": "version-two",
+        "outcome": "pending_review",
+        "target_issue_ids": [],
+        "reason": "Awaiting review."
+      }
+    ]
+  },
+  {
+    "name": "evidence-link-fact-belongs-to-candidate",
+    "path": [
+      "analysis",
+      "evidence_links",
+      0,
+      "fact_ids"
+    ],
+    "value": [
+      "fact-garden"
+    ]
+  },
+  {
+    "name": "selected-event-belongs-to-selected-answer",
+    "path": [
+      "outline",
+      "selected_experience_ids"
+    ],
+    "value": [
+      "event-garden"
+    ]
+  },
+  {
+    "name": "selected-answer-matches-selection-decision",
+    "path": [
+      "outline",
+      "selected_candidate_ids"
+    ],
+    "value": [
+      "answer-garden"
+    ]
+  },
+  {
+    "name": "location-belongs-to-structure-entry",
+    "path": [
+      "result",
+      "structure",
+      0,
+      "locations",
+      0
+    ],
+    "value": {
+      "paragraph_id": "paragraph-one",
+      "paragraph_number": 1,
+      "sentence_ids": [
+        "sentence-two"
+      ],
+      "excerpts": [
+        "Order can help shared work."
+      ]
+    }
+  }
+]

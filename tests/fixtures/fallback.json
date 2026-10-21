@@ -1,0 +1,104 @@
+{
+  "evidence_version": "evidence-empty",
+  "sources": [],
+  "facts": [],
+  "writing_report": {
+    "draft_id": "draft-empty",
+    "evidence_version": "evidence-empty",
+    "personalization": "non_personalized",
+    "notes": [],
+    "section_checks": [],
+    "length_snapshot": {
+      "body_chars": 28,
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": false,
+      "subtitle_pending": false,
+      "measurement_scope": "body_only",
+      "body_limit_status": "unspecified"
+    },
+    "fallback_sentences": [
+      {
+        "sentence_id": "fallback-one",
+        "text": "Small steps can build trust.",
+        "section_ids": [],
+        "claim_kind": "general_statement",
+        "fact_ids": []
+      }
+    ]
+  },
+  "bundle": {
+    "version_id": "version-fallback",
+    "evidence_version": "evidence-empty",
+    "paragraphs": [
+      {
+        "paragraph_id": "fallback-paragraph",
+        "sentences": [
+          {
+            "sentence_id": "fallback-one",
+            "text": "Small steps can build trust.",
+            "section_ids": [],
+            "claim_kind": "general_statement",
+            "fact_ids": []
+          }
+        ]
+      }
+    ],
+    "subtitle": null,
+    "subtitle_fact_ids": [],
+    "subtitle_placement": "answer",
+    "personalization": "non_personalized"
+  },
+  "integration_report": {
+    "source_draft_id": "draft-empty",
+    "evidence_version": "evidence-empty",
+    "baseline_bundle": {
+      "version_id": "version-empty",
+      "evidence_version": "evidence-empty",
+      "paragraphs": [],
+      "subtitle": null,
+      "subtitle_fact_ids": [],
+      "subtitle_placement": "answer",
+      "personalization": "non_personalized"
+    },
+    "candidate_version_id": "version-fallback",
+    "selection": "general_fallback",
+    "selection_reason": "No usable sentences remain.",
+    "edits": [
+      {
+        "operation": "add_fallback",
+        "before_sentence_ids": [],
+        "after_sentence_ids": [
+          "fallback-one"
+        ],
+        "section_ids": [],
+        "fact_ids": [],
+        "reason": "Provide a readable general draft after empty output."
+      }
+    ],
+    "reverse_outline": [],
+    "requirement_checks": [],
+    "length_before": {
+      "body_chars": 0,
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": false,
+      "subtitle_pending": false,
+      "measurement_scope": "body_only",
+      "body_limit_status": "unspecified"
+    },
+    "length_after": {
+      "body_chars": 28,
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": false,
+      "subtitle_pending": false,
+      "measurement_scope": "body_only",
+      "body_limit_status": "unspecified"
+    },
+    "issues": []
+  }
+}

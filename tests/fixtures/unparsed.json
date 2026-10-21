@@ -1,0 +1,1213 @@
+{
+  "evidence_version": "evidence-fiction-1",
+  "request": {
+    "question": "Describe your action and its result.",
+    "length_policy": {
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": true
+    },
+    "request_id": "00000000-0000-0000-0000-000000000010",
+    "document_id": "00000000-0000-0000-0000-000000000020"
+  },
+  "sources": [
+    {
+      "source_id": "source-library",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "applicant",
+      "text": "I sorted library books.",
+      "metadata": {
+        "origin": "user",
+        "label": "Fictional library event",
+        "uri": null,
+        "catalog": null
+      },
+      "source_order": 0
+    },
+    {
+      "source_id": "source-garden",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "applicant",
+      "text": "I watered the garden.",
+      "metadata": {
+        "origin": "user",
+        "label": "Fictional garden event",
+        "uri": null,
+        "catalog": null
+      },
+      "source_order": 1
+    },
+    {
+      "source_id": "source-company",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "company",
+      "text": "Fictional Acorn runs a library.",
+      "metadata": {
+        "origin": "mcp",
+        "label": "Fictional company",
+        "uri": "https://example.invalid/acorn",
+        "catalog": null
+      },
+      "source_order": 2
+    }
+  ],
+  "facts": [
+    {
+      "fact_id": "fact-library",
+      "source_id": "source-library",
+      "source_kind": "applicant",
+      "quote": "I sorted library books.",
+      "span": {
+        "start": 0,
+        "end": 23
+      },
+      "experience_id": "event-library",
+      "claim_kind": "personal_event",
+      "attribution": "applicant",
+      "information_state": "available",
+      "conflict_ids": []
+    },
+    {
+      "fact_id": "fact-garden",
+      "source_id": "source-garden",
+      "source_kind": "applicant",
+      "quote": "I watered the garden.",
+      "span": {
+        "start": 0,
+        "end": 21
+      },
+      "experience_id": "event-garden",
+      "claim_kind": "personal_event",
+      "attribution": "applicant",
+      "information_state": "available",
+      "conflict_ids": []
+    },
+    {
+      "fact_id": "fact-company",
+      "source_id": "source-company",
+      "source_kind": "company",
+      "quote": "Fictional Acorn runs a library.",
+      "span": {
+        "start": 0,
+        "end": 31
+      },
+      "experience_id": null,
+      "claim_kind": "external_context",
+      "attribution": "Fictional Acorn",
+      "information_state": "available",
+      "conflict_ids": []
+    }
+  ],
+  "analysis": {
+    "analysis_status": "partial",
+    "question_type": "experience",
+    "requirements": [
+      {
+        "requirement_id": "req-action",
+        "description": "Describe your action.",
+        "resolution": "interpreted",
+        "origin": "explicit",
+        "information_role": "direct",
+        "required_by_prompt": true,
+        "application_condition": null,
+        "reason": "Fictional prompt explicitly asks action and result."
+      },
+      {
+        "requirement_id": "R-unparsed-question",
+        "description": "Describe your action and its result.",
+        "resolution": "unparsed",
+        "origin": "explicit",
+        "information_role": "direct",
+        "required_by_prompt": true,
+        "application_condition": null,
+        "reason": "Fictional prompt explicitly asks action and result."
+      },
+      {
+        "requirement_id": "req-context",
+        "description": "Optional company context.",
+        "resolution": "interpreted",
+        "origin": "interpreted",
+        "information_role": "supporting",
+        "required_by_prompt": false,
+        "application_condition": null,
+        "reason": "Fictional prompt explicitly asks action and result."
+      }
+    ],
+    "writing_conditions": [],
+    "company_role_context": [
+      {
+        "description": "Fictional library operator",
+        "fact_ids": [
+          "fact-company"
+        ],
+        "reason": "External company context only."
+      }
+    ],
+    "experience_candidates": [
+      {
+        "experience_id": "event-library",
+        "fact_ids": [
+          "fact-library"
+        ],
+        "source_order": 0
+      },
+      {
+        "experience_id": "event-garden",
+        "fact_ids": [
+          "fact-garden"
+        ],
+        "source_order": 1
+      }
+    ],
+    "answer_candidates": [
+      {
+        "candidate_id": "answer-library",
+        "experience_ids": [
+          "event-library"
+        ],
+        "fact_ids": [
+          "fact-library"
+        ],
+        "requirement_ids": [
+          "req-action",
+          "R-unparsed-question"
+        ],
+        "source_order": 0
+      },
+      {
+        "candidate_id": "answer-garden",
+        "experience_ids": [
+          "event-garden"
+        ],
+        "fact_ids": [
+          "fact-garden"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "source_order": 1
+      },
+      {
+        "candidate_id": "answer-company",
+        "experience_ids": [],
+        "fact_ids": [
+          "fact-company"
+        ],
+        "requirement_ids": [
+          "req-context"
+        ],
+        "source_order": 2
+      }
+    ],
+    "evidence_links": [
+      {
+        "requirement_id": "req-action",
+        "candidate_id": "answer-library",
+        "fact_ids": [
+          "fact-library"
+        ],
+        "information_role": "direct",
+        "information_state": "available",
+        "applicability": "applies",
+        "use_status": "candidate",
+        "reason": "An action is supplied."
+      },
+      {
+        "requirement_id": "R-unparsed-question",
+        "candidate_id": "answer-library",
+        "fact_ids": [],
+        "information_role": "direct",
+        "information_state": "unverified",
+        "applicability": "applies",
+        "use_status": "held",
+        "reason": "No result is supplied."
+      },
+      {
+        "requirement_id": "req-context",
+        "candidate_id": "answer-company",
+        "fact_ids": [
+          "fact-company"
+        ],
+        "information_role": "supporting",
+        "information_state": "available",
+        "applicability": "not_applicable",
+        "use_status": "excluded",
+        "reason": "Company description does not answer the requested personal event."
+      }
+    ],
+    "competency_candidates": [],
+    "role_links": [],
+    "gaps": [
+      {
+        "gap_id": "gap-result",
+        "question_key": "question-result",
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "candidate_id": "answer-library",
+        "missing_detail": "The outcome of the sorting work.",
+        "why_it_matters": "The prompt asks for a result.",
+        "priority": 0,
+        "question": "What happened after the books were sorted?",
+        "question_status": "proposed"
+      }
+    ],
+    "held_claims": [],
+    "research_status": "available"
+  },
+  "outline": {
+    "evidence_version": "evidence-fiction-1",
+    "selected_candidate_ids": [
+      "answer-library"
+    ],
+    "selected_experience_ids": [
+      "event-library"
+    ],
+    "selection_decisions": [
+      {
+        "candidate_id": "answer-library",
+        "decision": "selected",
+        "requirement_ids": [
+          "req-action",
+          "R-unparsed-question"
+        ],
+        "reason": "Directly supplies an action.",
+        "limits": [
+          "Outcome unknown"
+        ]
+      },
+      {
+        "candidate_id": "answer-garden",
+        "decision": "not_selected",
+        "requirement_ids": [
+          "req-action"
+        ],
+        "reason": "Keep distinct events separate.",
+        "limits": []
+      }
+    ],
+    "core_answer": "I sorted library books.",
+    "core_answer_fact_ids": [
+      "fact-library"
+    ],
+    "general_direction": null,
+    "composition": "Action then reflection",
+    "composition_reason": "Separate the supplied action from a general explanation.",
+    "requirement_map": [
+      {
+        "requirement_id": "req-action",
+        "section_ids": [
+          "section-action",
+          "section-explanation"
+        ],
+        "planned_coverage": "planned_supported",
+        "gap_ids": [],
+        "reason": "Action supplied."
+      },
+      {
+        "requirement_id": "R-unparsed-question",
+        "section_ids": [
+          "section-result"
+        ],
+        "planned_coverage": "unfilled",
+        "gap_ids": [
+          "gap-result"
+        ],
+        "reason": "Keep the mandatory result visible."
+      },
+      {
+        "requirement_id": "req-context",
+        "section_ids": [],
+        "planned_coverage": "not_applicable",
+        "gap_ids": [],
+        "reason": "Optional external context excluded."
+      }
+    ],
+    "sections": [
+      {
+        "section_id": "section-action",
+        "requirement_ids": [
+          "req-action"
+        ],
+        "role": "action",
+        "purpose": "Describe the supplied action",
+        "intended_content": "Library sorting action",
+        "allowed_content": "The applicant sorted library books.",
+        "fact_ids": [
+          "fact-library"
+        ],
+        "experience_ids": [
+          "event-library"
+        ],
+        "gap_ids": [],
+        "missing_info": [],
+        "write_mode": "grounded"
+      },
+      {
+        "section_id": "section-explanation",
+        "requirement_ids": [
+          "req-action"
+        ],
+        "role": "action",
+        "purpose": "Describe the supplied action",
+        "intended_content": "General explanation of shared work",
+        "allowed_content": "A general explanation without new personal claims.",
+        "fact_ids": [],
+        "experience_ids": [],
+        "gap_ids": [],
+        "missing_info": [],
+        "write_mode": "general"
+      },
+      {
+        "section_id": "section-result",
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "role": "result",
+        "purpose": "Preserve the unanswered result",
+        "intended_content": "Result remains unanswered",
+        "allowed_content": "",
+        "fact_ids": [],
+        "experience_ids": [],
+        "gap_ids": [
+          "gap-result"
+        ],
+        "missing_info": [
+          "Outcome is unknown"
+        ],
+        "write_mode": "omit"
+      }
+    ],
+    "paragraphs": [
+      {
+        "paragraph_id": "plan-one",
+        "order": 0,
+        "purpose": "Describe action with explanation.",
+        "allocations": [
+          {
+            "section_id": "section-action",
+            "content_focus": "First action statement",
+            "fact_ids": [
+              "fact-library"
+            ]
+          },
+          {
+            "section_id": "section-explanation",
+            "content_focus": "General explanation",
+            "fact_ids": []
+          }
+        ],
+        "previous_relation": null,
+        "weight": 60,
+        "target_chars": null,
+        "budget_reason": "No maximum was provided."
+      },
+      {
+        "paragraph_id": "plan-two",
+        "order": 1,
+        "purpose": "Continue the same logical action.",
+        "allocations": [
+          {
+            "section_id": "section-action",
+            "content_focus": "Restate the scope without adding a result",
+            "fact_ids": [
+              "fact-library"
+            ]
+          }
+        ],
+        "previous_relation": {
+          "type": "summary",
+          "reason": "Same event and action",
+          "fact_ids": [
+            "fact-library"
+          ]
+        },
+        "weight": 40,
+        "target_chars": null,
+        "budget_reason": "No maximum was provided."
+      }
+    ],
+    "subtitle_plan": {
+      "purpose": "Represent the supplied action",
+      "fact_ids": [
+        "fact-library"
+      ],
+      "held_claims": []
+    },
+    "budget": {
+      "max_chars": null,
+      "subtitle_reserved_chars": null,
+      "separator_chars": 0,
+      "usable_body_chars": null,
+      "constraint_notes": [
+        "Limit unspecified"
+      ]
+    },
+    "design_status": "partial",
+    "planning_notes": [
+      "Omitted result remains required."
+    ],
+    "held_claims": []
+  },
+  "section_drafts": [
+    {
+      "section_id": "section-action",
+      "allocations": [
+        {
+          "planned_paragraph_id": "plan-one",
+          "sentences": [
+            {
+              "sentence_id": "sentence-one",
+              "text": "I sorted library books.",
+              "section_ids": [
+                "section-action"
+              ],
+              "claim_kind": "personal_event",
+              "fact_ids": [
+                "fact-library"
+              ]
+            }
+          ]
+        },
+        {
+          "planned_paragraph_id": "plan-two",
+          "sentences": [
+            {
+              "sentence_id": "sentence-three",
+              "text": "My task was sorting books.",
+              "section_ids": [
+                "section-action"
+              ],
+              "claim_kind": "personal_event",
+              "fact_ids": [
+                "fact-library"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "section-explanation",
+      "allocations": [
+        {
+          "planned_paragraph_id": "plan-one",
+          "sentences": [
+            {
+              "sentence_id": "sentence-two",
+              "text": "Order can help shared work.",
+              "section_ids": [
+                "section-explanation"
+              ],
+              "claim_kind": "general_statement",
+              "fact_ids": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "section-result",
+      "allocations": []
+    }
+  ],
+  "writing_report": {
+    "draft_id": "draft-one",
+    "evidence_version": "evidence-fiction-1",
+    "personalization": "partial",
+    "notes": [
+      {
+        "code": "missing_information",
+        "section_ids": [
+          "section-result"
+        ],
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "sentence_ids": [],
+        "gap_ids": [
+          "gap-result"
+        ],
+        "handling": "omitted",
+        "message": "The result was not provided.",
+        "proposed_question": "What happened after sorting?"
+      }
+    ],
+    "section_checks": [
+      {
+        "section_id": "section-action",
+        "state": "drafted",
+        "sentence_ids": [
+          "sentence-one",
+          "sentence-three"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "gap_ids": [],
+        "reason": "Action supplied."
+      },
+      {
+        "section_id": "section-explanation",
+        "state": "general",
+        "sentence_ids": [
+          "sentence-two"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "gap_ids": [],
+        "reason": "General explanation."
+      },
+      {
+        "section_id": "section-result",
+        "state": "not_written",
+        "sentence_ids": [],
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "gap_ids": [
+          "gap-result"
+        ],
+        "reason": "Outcome unknown."
+      }
+    ],
+    "length_snapshot": {
+      "body_chars": 79,
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": true,
+      "subtitle_pending": true,
+      "measurement_scope": "body_only",
+      "body_limit_status": "unspecified"
+    },
+    "fallback_sentences": []
+  },
+  "bundle": {
+    "version_id": "version-one",
+    "evidence_version": "evidence-fiction-1",
+    "paragraphs": [
+      {
+        "paragraph_id": "paragraph-one",
+        "sentences": [
+          {
+            "sentence_id": "sentence-one",
+            "text": "I sorted library books.",
+            "section_ids": [
+              "section-action"
+            ],
+            "claim_kind": "personal_event",
+            "fact_ids": [
+              "fact-library"
+            ]
+          },
+          {
+            "sentence_id": "sentence-two",
+            "text": "Order can help shared work.",
+            "section_ids": [
+              "section-explanation"
+            ],
+            "claim_kind": "general_statement",
+            "fact_ids": []
+          }
+        ]
+      },
+      {
+        "paragraph_id": "paragraph-two",
+        "sentences": [
+          {
+            "sentence_id": "sentence-three",
+            "text": "My task was sorting books.",
+            "section_ids": [
+              "section-action"
+            ],
+            "claim_kind": "personal_event",
+            "fact_ids": [
+              "fact-library"
+            ]
+          }
+        ]
+      }
+    ],
+    "subtitle": "Sorting library books",
+    "subtitle_fact_ids": [
+      "fact-library"
+    ],
+    "subtitle_placement": "answer",
+    "personalization": "partial"
+  },
+  "integration_report": {
+    "source_draft_id": "draft-one",
+    "evidence_version": "evidence-fiction-1",
+    "baseline_bundle": {
+      "version_id": "version-one",
+      "evidence_version": "evidence-fiction-1",
+      "paragraphs": [
+        {
+          "paragraph_id": "paragraph-one",
+          "sentences": [
+            {
+              "sentence_id": "sentence-one",
+              "text": "I sorted library books.",
+              "section_ids": [
+                "section-action"
+              ],
+              "claim_kind": "personal_event",
+              "fact_ids": [
+                "fact-library"
+              ]
+            },
+            {
+              "sentence_id": "sentence-two",
+              "text": "Order can help shared work.",
+              "section_ids": [
+                "section-explanation"
+              ],
+              "claim_kind": "general_statement",
+              "fact_ids": []
+            }
+          ]
+        },
+        {
+          "paragraph_id": "paragraph-two",
+          "sentences": [
+            {
+              "sentence_id": "sentence-three",
+              "text": "My task was sorting books.",
+              "section_ids": [
+                "section-action"
+              ],
+              "claim_kind": "personal_event",
+              "fact_ids": [
+                "fact-library"
+              ]
+            }
+          ]
+        }
+      ],
+      "subtitle": "Sorting library books",
+      "subtitle_fact_ids": [
+        "fact-library"
+      ],
+      "subtitle_placement": "answer",
+      "personalization": "partial"
+    },
+    "candidate_version_id": "version-one",
+    "selection": "baseline",
+    "selection_reason": "Baseline preserves all supplied facts.",
+    "edits": [
+      {
+        "operation": "retain",
+        "before_sentence_ids": [
+          "sentence-one"
+        ],
+        "after_sentence_ids": [
+          "sentence-one"
+        ],
+        "section_ids": [
+          "section-action"
+        ],
+        "fact_ids": [
+          "fact-library"
+        ],
+        "reason": "Retained unchanged."
+      },
+      {
+        "operation": "retain",
+        "before_sentence_ids": [
+          "sentence-two"
+        ],
+        "after_sentence_ids": [
+          "sentence-two"
+        ],
+        "section_ids": [
+          "section-explanation"
+        ],
+        "fact_ids": [],
+        "reason": "Retained unchanged."
+      },
+      {
+        "operation": "retain",
+        "before_sentence_ids": [
+          "sentence-three"
+        ],
+        "after_sentence_ids": [
+          "sentence-three"
+        ],
+        "section_ids": [
+          "section-action"
+        ],
+        "fact_ids": [
+          "fact-library"
+        ],
+        "reason": "Retained unchanged."
+      }
+    ],
+    "reverse_outline": [
+      {
+        "scope": "candidate",
+        "paragraph_id": "paragraph-one",
+        "sentence_ids": [
+          "sentence-one",
+          "sentence-two"
+        ],
+        "section_ids": [
+          "section-action",
+          "section-explanation"
+        ],
+        "fact_ids": [
+          "fact-library"
+        ],
+        "gist": "Action with general explanation",
+        "roles": [
+          "action",
+          "explanation"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "semantic_status": "assessed",
+        "difference_from_plan": null
+      },
+      {
+        "scope": "candidate",
+        "paragraph_id": "paragraph-two",
+        "sentence_ids": [
+          "sentence-three"
+        ],
+        "section_ids": [
+          "section-action"
+        ],
+        "fact_ids": [
+          "fact-library"
+        ],
+        "gist": "Scope of the action",
+        "roles": [
+          "action"
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "semantic_status": "assessed",
+        "difference_from_plan": null
+      }
+    ],
+    "requirement_checks": [
+      {
+        "requirement_id": "req-action",
+        "baseline_sentence_ids": [
+          "sentence-one",
+          "sentence-three"
+        ],
+        "candidate_sentence_ids": [
+          "sentence-one",
+          "sentence-three"
+        ],
+        "before_state": "expressed",
+        "after_state": "expressed",
+        "gap_ids": [],
+        "missing_detail": null,
+        "reason": "Current body mapping."
+      },
+      {
+        "requirement_id": "R-unparsed-question",
+        "baseline_sentence_ids": [],
+        "candidate_sentence_ids": [],
+        "before_state": "unassessed",
+        "after_state": "unassessed",
+        "gap_ids": [
+          "gap-result"
+        ],
+        "missing_detail": "Outcome unknown",
+        "reason": "Current body mapping."
+      },
+      {
+        "requirement_id": "req-context",
+        "baseline_sentence_ids": [],
+        "candidate_sentence_ids": [],
+        "before_state": "not_expressed",
+        "after_state": "not_expressed",
+        "gap_ids": [],
+        "missing_detail": null,
+        "reason": "Current body mapping."
+      }
+    ],
+    "length_before": {
+      "body_chars": 79,
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": true,
+      "subtitle_pending": true,
+      "measurement_scope": "body_only",
+      "body_limit_status": "unspecified"
+    },
+    "length_after": {
+      "body_chars": 79,
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": true,
+      "subtitle_pending": true,
+      "measurement_scope": "body_only",
+      "body_limit_status": "unspecified"
+    },
+    "issues": []
+  },
+  "review": {
+    "version_id": "version-one",
+    "evidence_version": "evidence-fiction-1",
+    "personalization": "partial",
+    "title_review": {
+      "condition": "allowed",
+      "condition_refs": [],
+      "placement": "answer",
+      "reason": "No restriction was supplied.",
+      "focus_summary": "Library sorting action",
+      "candidates": [
+        {
+          "id": "title-one",
+          "text": "Sorting library books",
+          "kind": "generated",
+          "claims": [
+            {
+              "meaning": "The applicant sorted library books.",
+              "body_sentence_ids": [
+                "sentence-one",
+                "sentence-three"
+              ],
+              "fact_ids": [
+                "fact-library"
+              ]
+            }
+          ],
+          "checks": [
+            {
+              "name": "body_support",
+              "status": "met",
+              "reason": "Matches the supplied action."
+            }
+          ],
+          "decision": "selected",
+          "reason": "Represents current body."
+        }
+      ],
+      "selected_candidate_id": "title-one"
+    },
+    "sentence_checks": [
+      {
+        "sentence_id": "sentence-one",
+        "fact_ids": [
+          "fact-library"
+        ],
+        "status": "source_supported",
+        "reason": "Same action and actor."
+      },
+      {
+        "sentence_id": "sentence-two",
+        "fact_ids": [],
+        "status": "general_valid",
+        "reason": "General explanation only."
+      },
+      {
+        "sentence_id": "sentence-three",
+        "fact_ids": [
+          "fact-library"
+        ],
+        "status": "source_supported",
+        "reason": "Restates the action scope."
+      }
+    ],
+    "requirement_checks": [
+      {
+        "requirement_id": "req-action",
+        "body_sentence_ids": [
+          "sentence-one",
+          "sentence-three"
+        ],
+        "fact_ids": [
+          "fact-library"
+        ],
+        "status": "met",
+        "missing_detail": null,
+        "reason": "Current body states the action."
+      },
+      {
+        "requirement_id": "R-unparsed-question",
+        "body_sentence_ids": [],
+        "fact_ids": [],
+        "status": "unassessed",
+        "missing_detail": "Outcome unknown.",
+        "reason": "No outcome was supplied."
+      },
+      {
+        "requirement_id": "req-context",
+        "body_sentence_ids": [],
+        "fact_ids": [],
+        "status": "not_applicable",
+        "missing_detail": null,
+        "reason": "Optional context was excluded."
+      }
+    ],
+    "issues": [
+      {
+        "issue_id": "issue-result",
+        "code": "missing_information",
+        "area": "body",
+        "sentence_ids": [],
+        "section_ids": [
+          "section-result"
+        ],
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "fact_ids": [],
+        "gap_ids": [
+          "gap-result"
+        ],
+        "excerpt": null,
+        "reason": "No outcome is present in user sources.",
+        "action": "suggest",
+        "verification": "Requires a new user statement.",
+        "fixable_without_new_info": false,
+        "status": "open"
+      }
+    ],
+    "length_check": {
+      "version_id": "version-one",
+      "body_chars": 79,
+      "subtitle_chars": 21,
+      "separator_chars": 2,
+      "counted_chars": 102,
+      "max_chars": null,
+      "includes_subtitle": true,
+      "status": "unspecified",
+      "condition_status": "unassessed",
+      "notes": [
+        "No limit was provided."
+      ]
+    },
+    "quality": {
+      "specificity": "limited",
+      "prompt_coverage": "limited",
+      "coherence": "adequate"
+    },
+    "repair_targets": [],
+    "fixable_without_new_info": false,
+    "suggestions": [
+      {
+        "section_id": "section-result",
+        "area": "body",
+        "sentence_ids": [],
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "issue_ids": [
+          "issue-result"
+        ],
+        "gap_ids": [
+          "gap-result"
+        ],
+        "question_key": "question-result",
+        "category": "required_info",
+        "missing_detail": "The result of the sorting work.",
+        "why_it_helps": "Completes the requested result.",
+        "next_action": "Optionally provide the outcome.",
+        "example_question": "What happened after sorting?",
+        "question_status": "proposed",
+        "priority": 0,
+        "locations": []
+      }
+    ],
+    "review_status": "performed"
+  },
+  "result": {
+    "document_id": "00000000-0000-0000-0000-000000000020",
+    "request_id": "00000000-0000-0000-0000-000000000010",
+    "version_id": "version-one",
+    "evidence_version": "evidence-fiction-1",
+    "subtitle": "Sorting library books",
+    "subtitle_placement": "answer",
+    "body": "I sorted library books. Order can help shared work.\n\nMy task was sorting books.",
+    "copy_text": "Sorting library books\n\nI sorted library books. Order can help shared work.\n\nMy task was sorting books.",
+    "character_count": 102,
+    "length_policy": {
+      "max_chars": null,
+      "include_spaces": true,
+      "include_newlines": true,
+      "include_subtitle": true
+    },
+    "personalization": "partial",
+    "structure": [
+      {
+        "section_id": "section-action",
+        "purpose": "Describe the supplied action",
+        "intended_content": "Library sorting action",
+        "actual_sentence_ids": [
+          "sentence-one",
+          "sentence-three"
+        ],
+        "locations": [
+          {
+            "paragraph_id": "paragraph-one",
+            "paragraph_number": 1,
+            "sentence_ids": [
+              "sentence-one"
+            ],
+            "excerpts": [
+              "I sorted library books."
+            ]
+          },
+          {
+            "paragraph_id": "paragraph-two",
+            "paragraph_number": 2,
+            "sentence_ids": [
+              "sentence-three"
+            ],
+            "excerpts": [
+              "My task was sorting books."
+            ]
+          }
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "requirement_statuses": [
+          {
+            "requirement_id": "req-action",
+            "status": "met"
+          }
+        ],
+        "coverage": "supported",
+        "missing_info": []
+      },
+      {
+        "section_id": "section-explanation",
+        "purpose": "Describe the supplied action",
+        "intended_content": "General explanation of shared work",
+        "actual_sentence_ids": [
+          "sentence-two"
+        ],
+        "locations": [
+          {
+            "paragraph_id": "paragraph-one",
+            "paragraph_number": 1,
+            "sentence_ids": [
+              "sentence-two"
+            ],
+            "excerpts": [
+              "Order can help shared work."
+            ]
+          }
+        ],
+        "requirement_ids": [
+          "req-action"
+        ],
+        "requirement_statuses": [
+          {
+            "requirement_id": "req-action",
+            "status": "met"
+          }
+        ],
+        "coverage": "general",
+        "missing_info": []
+      },
+      {
+        "section_id": "section-result",
+        "purpose": "Preserve the unanswered result",
+        "intended_content": "Result remains unanswered",
+        "actual_sentence_ids": [],
+        "locations": [],
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "requirement_statuses": [
+          {
+            "requirement_id": "R-unparsed-question",
+            "status": "unassessed"
+          }
+        ],
+        "coverage": "unassessed",
+        "missing_info": [
+          "Outcome is unknown"
+        ]
+      }
+    ],
+    "suggestions": [
+      {
+        "section_id": "section-result",
+        "area": "body",
+        "sentence_ids": [],
+        "requirement_ids": [
+          "R-unparsed-question"
+        ],
+        "issue_ids": [
+          "issue-result"
+        ],
+        "gap_ids": [
+          "gap-result"
+        ],
+        "question_key": "question-result",
+        "category": "required_info",
+        "missing_detail": "The result of the sorting work.",
+        "why_it_helps": "Completes the requested result.",
+        "next_action": "Optionally provide the outcome.",
+        "example_question": "What happened after sorting?",
+        "question_status": "proposed",
+        "priority": 0,
+        "locations": []
+      }
+    ],
+    "quality_report": {
+      "specificity": "limited",
+      "prompt_coverage": "limited",
+      "coherence": "adequate",
+      "review_status": "performed",
+      "display_status": "review_incomplete",
+      "length_check": {
+        "version_id": "version-one",
+        "body_chars": 79,
+        "subtitle_chars": 21,
+        "separator_chars": 2,
+        "counted_chars": 102,
+        "max_chars": null,
+        "includes_subtitle": true,
+        "status": "unspecified",
+        "condition_status": "unassessed",
+        "notes": [
+          "No limit was provided."
+        ]
+      },
+      "subtitle_reason": "No restriction was supplied.",
+      "required_item_count": 2,
+      "key_guidance": [
+        "The requested outcome remains unknown."
+      ],
+      "unverified_conditions": [
+        "Length limit"
+      ],
+      "technical_limits": []
+    },
+    "source_summary": [
+      {
+        "source_kind": "applicant",
+        "provided_source_count": 2,
+        "used_fact_count": 1
+      },
+      {
+        "source_kind": "company",
+        "provided_source_count": 1,
+        "used_fact_count": 0
+      },
+      {
+        "source_kind": "job_posting",
+        "provided_source_count": 0,
+        "used_fact_count": 0
+      }
+    ],
+    "generation_status": "completed",
+    "stop_reason": "missing_info_only"
+  }
+}

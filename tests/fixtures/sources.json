@@ -1,0 +1,44 @@
+{
+  "evidence_version": "evidence-fiction-1",
+  "sources": [
+    {
+      "source_id": "source-library",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "applicant",
+      "text": "I sorted library books.",
+      "metadata": {
+        "origin": "user",
+        "label": "Fictional library event",
+        "uri": null,
+        "catalog": null
+      },
+      "source_order": 0
+    },
+    {
+      "source_id": "source-garden",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "applicant",
+      "text": "I watered the garden.",
+      "metadata": {
+        "origin": "user",
+        "label": "Fictional garden event",
+        "uri": null,
+        "catalog": null
+      },
+      "source_order": 1
+    },
+    {
+      "source_id": "source-company",
+      "evidence_version": "evidence-fiction-1",
+      "source_kind": "company",
+      "text": "Fictional Acorn runs a library.",
+      "metadata": {
+        "origin": "mcp",
+        "label": "Fictional company context",
+        "uri": "https://example.invalid/acorn",
+        "catalog": null
+      },
+      "source_order": 2
+    }
+  ]
+}
