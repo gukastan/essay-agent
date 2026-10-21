@@ -1,122 +1,167 @@
-"""Wave 2 — MCP 서버 여러 개를 subprocess(stdio)로 1회씩 기동해 재사용하는 클라이언트.
+"""Bounded essay MCP access with discovery and shared local policy fallbacks."""
 
-Wave 1의 교훈대로 서버(lifespan)에서 한 번만 연결을 만들고 모든 요청이 공유한다.
-Wave 9 데모용으로, 프로세스 최초의 get_monitoring_status 호출 1회는 일부러
-asyncio.TimeoutError를 던진다(transient) — with_retry가 backoff 후 복구해야 한다.
-
-연결 대상은 "ops"(mcp_server.py — monitoring tool + runbook resource + prompt, 실제
-사용)와 "docs"(mcp_server_docs.py — API 문서 resource만 제공, agent는 사용하지 않는
-decoy) 두 서버다. resource/prompt를 요청할 때는 어느 서버가 그걸 들고 있는지 미리
-알고 있지 않다고 가정하고, find_resource_template()/find_prompt()로 연결된 서버들을
-순서대로 조회(list)해 이름이 맞는 걸 찾은 뒤에야 그 서버로 read_resource/get_prompt를
-보낸다.
-"""
-import asyncio
-import json
-import os
-import sys
-from contextlib import AsyncExitStack
+from collections.abc import Awaitable, Callable, Mapping
 from pathlib import Path
+from typing import Final, TypeVar
 
-from langsmith import traceable
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+import anyio
+from mcp import ClientSession
+from mcp.shared.exceptions import MCPError
+from mcp.types import Prompt, ResourceTemplate, Tool
+from pydantic import ValidationError
 
-SERVER_DIR = Path(__file__).parent.parent
-DEFAULT_SERVER_SCRIPTS = {
-    "ops": SERVER_DIR / "mcp_server.py",
-    "docs": SERVER_DIR / "mcp_server_docs.py",
-}
+from .mcp_lifecycle import MCPConnection, MCPTimeouts
+from .mcp_materials import CompanyMaterial, MaterialResult, local_guide, local_prompt
+from .mcp_wire import PromptPayload, ResourcePayload, ToolPayload
 
-
-def _attr(obj, *names):
-    """mcp SDK 버전에 따라 pydantic 필드명이 camelCase(예: resourceTemplates,
-    uriTemplate, 구버전 1.x)와 snake_case(예: resource_templates, uri_template,
-    신버전 2.x)로 갈린다 — 이 프로젝트 안에도 시스템 python3(mcp 1.28.1, camelCase)와
-    .venv(mcp 2.2.0, snake_case)가 섞여 있어 실행 환경마다 바뀐다. 둘 다 시도해서
-    설치된 버전과 무관하게 동작하게 한다."""
-    for name in names:
-        if hasattr(obj, name):
-            return getattr(obj, name)
-    raise AttributeError(f"{type(obj).__name__!r} has none of {names!r}")
+SERVER_DIR: Final = Path(__file__).resolve().parent.parent
+DEFAULT_SERVER_SCRIPTS: Final = {"essay": SERVER_DIR / "mcp_server.py"}
+DEFAULT_TIMEOUTS: Final = MCPTimeouts()
+T = TypeVar("T")
 
 
-class MCPClient:
-    def __init__(self, flaky_first_tool_call: bool = True,
-                 server_scripts: dict[str, Path] | None = None):
-        self._server_scripts = server_scripts or DEFAULT_SERVER_SCRIPTS
-        self._stack: AsyncExitStack | None = None
-        self.sessions: dict[str, ClientSession] = {}
-        self._lock = asyncio.Lock()
-        self._flaky_pending = flaky_first_tool_call   # Wave 9 시뮬레이션
+class MCPClient(MCPConnection):
+    """Mutable shared session client, owned by a single application lifespan task."""
 
-    async def start(self) -> None:
-        self._stack = AsyncExitStack()
-        for server_name, script in self._server_scripts.items():
-            params = StdioServerParameters(
-                command=sys.executable, args=[str(script)],
-                env={**os.environ, "FASTMCP_LOG_LEVEL": "ERROR"})
-            read, write = await self._stack.enter_async_context(stdio_client(params))
-            session = await self._stack.enter_async_context(ClientSession(read, write))
-            await session.initialize()
-            self.sessions[server_name] = session
+    def __init__(
+        self,
+        server_scripts: Mapping[str, Path] | None = None,
+        timeouts: MCPTimeouts = DEFAULT_TIMEOUTS,
+    ) -> None:
+        """Default only to the essay server, without simulated tool failures."""
+        super().__init__(
+            DEFAULT_SERVER_SCRIPTS if server_scripts is None else server_scripts,
+            timeouts,
+        )
+        self._lock: anyio.Lock = anyio.Lock()
 
-    async def stop(self) -> None:
-        if self._stack is not None:
-            await self._stack.aclose()
-            self._stack = None
-            self.sessions = {}
+    async def _request(
+        self, server: str, operation: Callable[[ClientSession], Awaitable[T]]
+    ) -> T | None:
+        """Bound queue waiting and SDK work together, returning a safe unavailable value."""
+        session = self.sessions.get(server)
+        if session is None:
+            self.warn("unavailable")
+            return None
+        try:
+            with anyio.fail_after(self.timeouts.call):
+                async with self._lock:
+                    return await operation(session)
+        except (
+            TimeoutError,
+            RuntimeError,
+            MCPError,
+            OSError,
+            anyio.EndOfStream,
+            anyio.ClosedResourceError,
+            anyio.BrokenResourceError,
+            ValidationError,
+        ):
+            self.warn("capability_unavailable")
+            return None
 
-    @traceable(run_type="tool", name="mcp.call_tool")
-    async def call_tool(self, name: str, arguments: dict, server: str = "ops") -> dict:
-        if self._flaky_pending and name == "get_monitoring_status":
-            self._flaky_pending = False
-            raise asyncio.TimeoutError("simulated transient timeout (Wave 9 demo)")
-        async with self._lock:
-            result = await self.sessions[server].call_tool(name, arguments)
-        return json.loads(result.content[0].text)
+    async def search_company_job_materials(
+        self,
+        company_name: str,
+        job_title: str | None = None,
+    ) -> tuple[CompanyMaterial, ...]:
+        """Return at most three frozen material records; lookup failure is nonfatal."""
+        result = await self._request(
+            "essay",
+            lambda session: session.call_tool(
+                "search_company_job_materials",
+                {"company_name": company_name, "job_title": job_title},
+            ),
+        )
+        if result is None:
+            return ()
+        try:
+            envelope = ToolPayload.model_validate_json(result.model_dump_json())
+            if envelope.is_error:
+                self.warn("tool_error")
+                return ()
+            return MaterialResult.model_validate_json(envelope.text()).materials
+        except ValueError:
+            self.warn("invalid_tool_content")
+            return ()
 
-    @traceable(run_type="tool", name="mcp.list_resource_templates")
-    async def list_resource_templates(self, server: str) -> list:
-        async with self._lock:
-            result = await self.sessions[server].list_resource_templates()
-        return _attr(result, "resourceTemplates", "resource_templates")
+    async def list_tools(self, server: str = "essay") -> list[Tool]:
+        """Discover tools through the live session."""
+        result = await self._request(server, lambda session: session.list_tools())
+        return [] if result is None else result.tools
 
-    @traceable(run_type="tool", name="mcp.find_resource_template")
-    async def find_resource_template(self, template_name: str) -> tuple[str, str]:
-        """연결된 서버들을 순서대로 조회해 template_name을 제공하는 서버를 찾는다."""
-        for server_name in self.sessions:
-            templates = await self.list_resource_templates(server_name)
-            matched = next((t for t in templates if t.name == template_name), None)
-            if matched is not None:
-                return server_name, _attr(matched, "uriTemplate", "uri_template")
-        raise ValueError(
-            f"MCP resource template not found on any connected server: {template_name}")
+    async def list_resource_templates(self, server: str = "essay") -> list[ResourceTemplate]:
+        """Discover parameterized resources through the live session."""
+        result = await self._request(server, lambda session: session.list_resource_templates())
+        return [] if result is None else result.resource_templates
 
-    @traceable(run_type="tool", name="mcp.read_resource")
-    async def read_resource(self, uri: str, server: str) -> str:
-        async with self._lock:
-            result = await self.sessions[server].read_resource(uri)
-        return result.contents[0].text
+    async def find_resource_template(self, template_name: str) -> tuple[str, str] | None:
+        """Return the discovered server and URI template, when available."""
+        for server_name in tuple(self.sessions):
+            for template in await self.list_resource_templates(server_name):
+                if template.name == template_name:
+                    return server_name, template.uri_template
+        self.warn("resource_not_discovered")
+        return None
 
-    @traceable(run_type="tool", name="mcp.list_prompts")
-    async def list_prompts(self, server: str) -> list:
-        async with self._lock:
-            result = await self.sessions[server].list_prompts()
-        return result.prompts
+    async def read_resource(self, uri: str, server: str = "essay") -> str | None:
+        """Read textual resource blocks without assuming a nonempty first item."""
+        result = await self._request(server, lambda session: session.read_resource(uri))
+        if result is None:
+            return None
+        try:
+            return ResourcePayload.model_validate_json(result.model_dump_json()).text()
+        except ValueError:
+            self.warn("invalid_resource_content")
+            return None
 
-    @traceable(run_type="tool", name="mcp.find_prompt")
-    async def find_prompt(self, prompt_name: str) -> str:
-        """연결된 서버들을 순서대로 조회해 prompt_name을 제공하는 서버를 찾는다."""
-        for server_name in self.sessions:
-            prompts = await self.list_prompts(server_name)
-            if any(p.name == prompt_name for p in prompts):
+    async def list_prompts(self, server: str = "essay") -> list[Prompt]:
+        """Discover prompt definitions through the live session."""
+        result = await self._request(server, lambda session: session.list_prompts())
+        return [] if result is None else result.prompts
+
+    async def find_prompt(self, prompt_name: str) -> str | None:
+        """Return the server exposing the requested prompt."""
+        for server_name in tuple(self.sessions):
+            if any(prompt.name == prompt_name for prompt in await self.list_prompts(server_name)):
                 return server_name
-        raise ValueError(
-            f"MCP prompt not found on any connected server: {prompt_name}")
+        self.warn("prompt_not_discovered")
+        return None
 
-    @traceable(run_type="tool", name="mcp.get_prompt")
-    async def get_prompt(self, name: str, arguments: dict, server: str = "ops") -> str:
-        async with self._lock:
-            result = await self.sessions[server].get_prompt(name, arguments)
-        return result.messages[0].content.text
+    async def get_prompt(self, question_type: str, server: str = "essay") -> str | None:
+        """Read the essay prompt from a discovered server."""
+        result = await self._request(
+            server,
+            lambda session: session.get_prompt(
+                "essay_writing_prompt",
+                {"question_type": question_type},
+            ),
+        )
+        if result is None:
+            return None
+        try:
+            return PromptPayload.model_validate_json(result.model_dump_json()).text()
+        except ValueError:
+            self.warn("invalid_prompt_content")
+            return None
+
+    async def writing_guide(self, question_type: str) -> str:
+        """Discover then read the guide, falling back to the same static file."""
+        fallback = await anyio.to_thread.run_sync(local_guide, question_type)
+        location = await self.find_resource_template("get_writing_guide")
+        if location is None:
+            return fallback
+        server, template = location
+        content = await self.read_resource(
+            template.replace("{question_type}", question_type), server
+        )
+        return content or fallback
+
+    async def writing_prompt(self, question_type: str) -> str:
+        """Discover then read the writing prompt, preserving policy on failure."""
+        fallback = await anyio.to_thread.run_sync(local_prompt, question_type)
+        server = await self.find_prompt("essay_writing_prompt")
+        if server is None:
+            return fallback
+        content = await self.get_prompt(question_type, server)
+        return content or fallback
