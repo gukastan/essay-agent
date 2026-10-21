@@ -1,98 +1,170 @@
 #!/usr/bin/env bash
-#
-# all_total — 실제 OpenAI API로 에이전트를 "기동만" 해두는 스크립트.
-#
-# run_openai_test.sh처럼 자동으로 요청을 보내고 검증한 뒤 끝나는 것이 아니라,
-# 서버를 켠 채로 그대로 떠 있게 두어 사용자가 직접 테스트해볼 수 있게 한다:
-#   - curl로 /chat, /chat/stream 호출해보기 (manual_openai.md 사용 예 1~4)
-#   - web_demo_server.py를 추가로 띄워 브라우저 채팅 화면으로 써보기 (사용 예 5)
-#
-# ⚠️ 실제 OpenAI 계정에 과금되는 원격 API 호출이다 — run_agent_ollma.sh(로컬 추론)와
-# 달리, 이 스크립트가 떠 있는 동안 보내는 요청마다 실제 비용이 청구된다.
-#
-# 종료하려면 이 터미널에서 Ctrl+C.
-#
 set -euo pipefail
 cd "$(dirname "$0")/.."
-
-# 이 머신은 plain python3/python이 alias로 다른 경로를 가리켜 venv를 무시하는
-# 경우가 있어, 이 프로젝트 전용 .venv가 있으면 PATH 맨 앞에 명시적으로 꽂아둔다.
-[ -x ".venv/bin/python3" ] && export PATH="$PWD/.venv/bin:$PATH"
-
-FAST_MODEL="${OPENAI_FAST_MODEL:-gpt-4o-mini}"
-QUALITY_MODEL="${OPENAI_QUALITY_MODEL:-gpt-4o}"
-
-# ── 0) 환경 변수 ───────────────────────────────────────────────────────
-if [ ! -f .env ]; then
-    echo "ERROR: .env가 없습니다 — .env.example을 복사해 .env로 만들고 본인 API 키를 채워주세요."
-    echo "  cp .env.example .env"
+if [ ! -x .venv/bin/python ]; then
+    echo 'ERROR: run bash sh/setup_venv.sh first.' >&2
     exit 1
 fi
-set -a; source .env; set +a
-export LANGCHAIN_PROJECT="capstone-all-total-openai"   # fake/ollama 모드와 프로젝트 분리
+exec .venv/bin/python - "$@" <<'PY'
+"""Supervise one loopback child without touching another process or database."""
 
-if [ -z "${OPENAI_API_KEY:-}" ] || [ "$OPENAI_API_KEY" = "sk-..." ]; then
-    echo "ERROR: OPENAI_API_KEY가 비어있거나 플레이스홀더입니다 — .env에 본인 키를 채우세요 (.env.example 참고)."
-    exit 1
-fi
+import os
+import signal
+import socket
+import subprocess
+import sys
+import time
+from pathlib import Path
+from threading import Event
+from types import FrameType
+from typing import Final, NoReturn
+from urllib.parse import urlsplit
 
-echo "LangSmith: project=$LANGCHAIN_PROJECT tracing=${LANGCHAIN_TRACING_V2:-}"
-echo "모델: fast=$FAST_MODEL / quality=$QUALITY_MODEL"
-echo
-echo "⚠️  에이전트가 떠 있는 동안 보내는 요청마다 실제 OpenAI API가 호출되어 계정에"
-echo "   비용이 청구됩니다 (결제 수단 연결 여부·키가 본인 계정 것인지 확인하세요)."
-read -r -p "계속하시겠습니까? [y/N] " CONFIRM
-case "$CONFIRM" in
-    [yY]|[yY][eE][sS]) ;;
-    *) echo "중단합니다."; exit 1 ;;
-esac
+import httpx
+from dotenv import load_dotenv
 
-# ── 1) 이전 실행 정리 ──────────────────────────────────────────────────
-lsof -ti:8100 | xargs kill -9 2>/dev/null || true
-rm -f session.db
+MAX_PORT: Final = 65535
 
-cleanup() {
-    echo
-    echo "에이전트를 종료합니다..."
-    lsof -ti:8100 | xargs kill -9 2>/dev/null || true
-}
-trap cleanup EXIT
 
-# ── 2) 서버 기동 (백그라운드로 띄운 뒤 준비될 때까지 대기) ─────────────
-LLM_BACKEND=openai SUPERVISOR_VERSION=v2 python3 server.py &
-SERVER_PID=$!
-for _ in $(seq 1 40); do
-    curl -s http://127.0.0.1:8100/health >/dev/null 2>&1 && break
-    sleep 0.5
-done
+def _fail(message: str) -> NoReturn:
+    raise SystemExit(message)
 
-echo
-curl -s http://127.0.0.1:8100/health | python3 -m json.tool --no-ensure-ascii
 
-cat <<EOF
+def _message(message: str) -> None:
+    _ = sys.stdout.write(message + "\n")
+    _ = sys.stdout.flush()
 
-################################################################
- 에이전트가 떠 있습니다 (http://127.0.0.1:8100, LLM_BACKEND=openai)
- ⚠️  아래 요청들은 전부 실제 과금 호출입니다.
-################################################################
 
-지금 바로 테스트해볼 수 있는 방법:
+def _port_value(name: str, default: str) -> int:
+    value = os.getenv(name, default)
+    if not value.isdecimal() or not 1 <= int(value) <= MAX_PORT:
+        _fail(f"ERROR: {name} must be a port from 1 to 65535.")
+    return int(value)
 
-1) curl로 말 걸어보기
-   curl -s -X POST localhost:8100/chat -H 'Content-Type: application/json' \\
-     -d '{"message":"auth-service 로그인 응답이 느려졌어요. 원인 확인해주세요","thread_id":"t-test"}' \\
-     | python3 -m json.tool --no-ensure-ascii
 
-2) 실시간 진행 상황 보기 (스트리밍)
-   curl -sN -G "localhost:8100/chat/stream" \\
-     --data-urlencode "message=web-01 CPU 급증 원인 진단해줘" \\
-     --data-urlencode "thread_id=t-test-sse"
+def _healthy(client: httpx.Client, url: str) -> bool:
+    try:
+        return client.get(url).is_success
+    except httpx.RequestError:
+        return False
 
-3) 브라우저 채팅 화면으로 써보기 (새 터미널에서)
-   python3 web_demo_server.py
-   → http://localhost:8600 접속
 
-더 자세한 사용 예는 manual_openai.md 참고. 종료하려면 이 터미널에서 Ctrl+C.
-EOF
+def _configuration() -> tuple[bool, int, str]:
+    if os.getenv("ESSAY_LOAD_DOTENV", "1") == "1":
+        _ = load_dotenv(Path.cwd() / ".env", override=False)
+    _ = os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
+    frontend = sys.argv[1:] == ["--frontend"]
+    if sys.argv[1:] and not frontend:
+        _fail("ERROR: unexpected launcher argument.")
+    agent_port = _port_value("AGENT_PORT", "8100")
+    frontend_port = _port_value("FRONTEND_PORT", "8600")
+    port = frontend_port if frontend else agent_port
+    backend = os.getenv("LLM_BACKEND", "openai")
+    if not frontend:
+        if backend not in ("openai", "fake"):
+            _fail("ERROR: LLM_BACKEND must be openai or fake.")
+        key = os.getenv("OPENAI_API_KEY", "").strip()
+        if backend == "openai" and (not key or key in ("sk-...", "your-key", "YOUR_API_KEY")):
+            _fail("ERROR: set OPENAI_API_KEY, or use LLM_BACKEND=fake.")
+    base = os.getenv("AGENT_BASE_URL", f"http://127.0.0.1:{agent_port}")
+    try:
+        parsed = urlsplit(base)
+        base_port = parsed.port
+    except ValueError:
+        _fail("ERROR: AGENT_BASE_URL must have a valid HTTP port.")
+    if (
+        parsed.scheme != "http"
+        or parsed.hostname not in ("127.0.0.1", "localhost")
+        or parsed.username
+        or parsed.password
+        or parsed.path not in ("", "/")
+        or parsed.query
+        or parsed.fragment
+        or base_port == 0
+    ):
+        _fail("ERROR: AGENT_BASE_URL must be a loopback HTTP origin.")
+    os.environ["AGENT_BASE_URL"] = base
+    os.environ["AGENT_PORT"] = str(agent_port)
+    os.environ["FRONTEND_PORT"] = str(frontend_port)
+    os.environ["ESSAY_LAUNCH_ROLE"] = "frontend" if frontend else "backend"
+    return frontend, port, base
 
-wait "$SERVER_PID"
+
+def _spawn(port: int) -> subprocess.Popen[bytes]:
+    with socket.socket() as listener:
+        try:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", port))
+            listener.listen()
+        except OSError:
+            _fail(f"ERROR: port {port} is in use; its owner was not stopped.")
+        os.environ["ESSAY_LISTEN_FD"] = str(listener.fileno())
+        return subprocess.Popen(
+            [
+                "./.venv/bin/python",
+                "-c",
+                """
+import os,socket,uvicorn
+if os.environ['ESSAY_LAUNCH_ROLE']=='frontend':
+    from web_demo_server import create_app,ProxySettings
+    app=create_app(ProxySettings(backend=os.environ['AGENT_BASE_URL']))
+else:
+    from server import app
+listener=socket.socket(fileno=int(os.environ['ESSAY_LISTEN_FD']))
+uvicorn.Server(uvicorn.Config(app,host='127.0.0.1',log_level='warning')).run(sockets=[listener])
+""",
+            ],
+            pass_fds=(listener.fileno(),),
+        )
+
+
+def _watch(child: subprocess.Popen[bytes], client: httpx.Client, port: int, stopped: Event) -> int:
+    deadline = time.monotonic() + 20
+    while not stopped.is_set() and time.monotonic() < deadline:
+        status = child.poll()
+        if status is not None:
+            _message("ERROR: child exited before readiness.")
+            return status or 1
+        if _healthy(client, f"http://127.0.0.1:{port}/health") and child.poll() is None:
+            _message(f"Ready at http://127.0.0.1:{port}")
+            break
+        _ = stopped.wait(0.1)
+    else:
+        _message("ERROR: startup interrupted or readiness timed out.")
+        return 1
+    while not stopped.wait(0.1):
+        status = child.poll()
+        if status is not None:
+            return status
+    return 0
+
+
+def _main() -> int:
+    frontend, port, base = _configuration()
+    stopped = Event()
+
+    def stop(signum: int, frame: FrameType | None) -> None:
+        del signum, frame
+        stopped.set()
+
+    _ = signal.signal(signal.SIGINT, stop)
+    _ = signal.signal(signal.SIGTERM, stop)
+    with httpx.Client(timeout=0.5, trust_env=False) as client:
+        if frontend and not _healthy(client, base.rstrip("/") + "/health"):
+            _fail("ERROR: backend unavailable; run bash sh/run_agent_openai.sh first.")
+        child = _spawn(port)
+        _message(f"Started owned child PID={child.pid}")
+        try:
+            return _watch(child, client, port, stopped)
+        finally:
+            if child.poll() is None:
+                child.terminate()
+                try:
+                    _ = child.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    _fail(f"ERROR: owned child PID={child.pid} did not stop within 10s.")
+            _message(f"Owned child PID={child.pid} reaped.")
+
+
+raise SystemExit(_main())
+PY
